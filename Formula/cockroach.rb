@@ -12,16 +12,46 @@ class Cockroach < Formula
     ENV["GOPATH"] = buildpath
     system "make", "install"
     bin.install "bin/cockroach" => "cockroach"
-
-    # TODO(pmattis): Debug the launchctl stuff
-    # (prefix+'com.cockroachlabs.cockroachdb.plist').write startup_plist
-    # (prefix+'com.cockroachlabs.cockroachdb.plist').chmod 0644
   end
 
-  def caveats
-    <<-EOS.undent
-    Start the cockroach server:
-        cockroach start --store=#{var}/cockroach
+  def caveats; <<-EOS.undent
+    CockroachDB is a distributed database intended for multi-server deployments.
+    For local development only, this formula ships a launchd configuration to
+    start a single-node cluster that stores its data under:
+      #{var}/cockroach/
+
+    Instead of the default port of 8080, the launchd node serves its admin UI at:
+      #{Formatter.url('http://localhost:26256')}
+
+    To run CockroachDB in production, please see:
+      #{Formatter.url('https://www.cockroachlabs.com/docs/recommended-production-settings.html')}
+    EOS
+  end
+
+  plist_options :manual => "cockroach start"
+
+  def plist; <<-EOS.undent
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    <plist version="1.0">
+    <dict>
+      <key>Label</key>
+      <string>#{plist_name}</string>
+      <key>ProgramArguments</key>
+      <array>
+        <string>#{opt_bin}/cockroach</string>
+        <string>start</string>
+        <string>--store=#{var}/cockroach/</string>
+        <string>--http-port=26256</string>
+      </array>
+      <key>WorkingDirectory</key>
+      <string>#{var}</string>
+      <key>RunAtLoad</key>
+      <true/>
+      <key>KeepAlive</key>
+      <true/>
+    </dict>
+    </plist>
     EOS
   end
 
@@ -44,34 +74,4 @@ class Cockroach < Formula
       system "#{bin}/cockroach", "quit"
     end
   end
-
-  #   def startup_plist
-  #     return <<-EOS
-  # <?xml version="1.0" encoding="UTF-8"?>
-  # <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-  # <plist version="1.0">
-  # <dict>
-  #   <key>Label</key>
-  #   <string>com.cockroachlabs.cockroachdb</string>
-  #   <key>ProgramArguments</key>
-  #   <array>
-  #     <string>#{bin}/cockroach</string>
-  #     <string>start</string>
-  #   </array>
-  #   <key>RunAtLoad</key>
-  #   <true/>
-  #   <key>KeepAlive</key>
-  #   <false/>
-  #   <key>UserName</key>
-  #   <string>#{`whoami`.chomp}</string>
-  #   <key>WorkingDirectory</key>
-  #   <string>#{HOMEBREW_PREFIX}</string>
-  #   <key>StandardErrorPath</key>
-  #   <string>#{var}/log/cockroachdb/output.log</string>
-  #   <key>StandardOutPath</key>
-  #   <string>#{var}/log/cockroachdb/output.log</string>
-  # </dict>
-  # </plist>
-  # EOS
-  #   end
 end
