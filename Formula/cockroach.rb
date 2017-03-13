@@ -41,7 +41,23 @@ class Cockroach < Formula
   end
 
   test do
-    system "#{bin}/cockroach", "version"
+    begin
+      system "#{bin}/cockroach", "start", "--background"
+      pipe_output("#{bin}/cockroach sql", <<-EOS.undent)
+        CREATE DATABASE bank;
+        CREATE TABLE bank.accounts (id INT PRIMARY KEY, balance DECIMAL);
+        INSERT INTO bank.accounts VALUES (1, 1000.50);
+      EOS
+      output = pipe_output("#{bin}/cockroach sql --format=csv",
+        "SELECT * FROM bank.accounts;")
+      assert_equal <<-EOS.undent, output
+        1 row
+        id,balance
+        1,1000.50
+      EOS
+    ensure
+      system "#{bin}/cockroach", "quit"
+    end
   end
 
   #   def startup_plist
