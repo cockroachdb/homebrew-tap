@@ -27,16 +27,31 @@ class Cockroach < Formula
     system "xcrun", "make", "GOFLAGS=-v", "-C",
            "src/github.com/cockroachdb/cockroach", "build"
     bin.install "src/github.com/cockroachdb/cockroach/cockroach" => "cockroach"
-
-    # TODO(pmattis): Debug the launchctl stuff
-    # (prefix+'com.cockroachlabs.cockroachdb.plist').write startup_plist
-    # (prefix+'com.cockroachlabs.cockroachdb.plist').chmod 0644
   end
 
-  def caveats
-    <<-EOS.undent
-    Start the cockroach server:
-        cockroach start --store=#{var}/cockroach
+  plist_options :manual => "cockroach start"
+
+  def plist; <<-EOS.undent
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    <plist version="1.0">
+    <dict>
+      <key>Label</key>
+      <string>#{plist_name}</string>
+      <key>ProgramArguments</key>
+      <array>
+        <string>#{opt_bin}/cockroach</string>
+        <string>start</string>
+        <string>--store=#{var}/cockroach/</string>
+      </array>
+      <key>WorkingDirectory</key>
+      <string>#{var}</string>
+      <key>RunAtLoad</key>
+      <true/>
+      <key>KeepAlive</key>
+      <true/>
+    </dict>
+    </plist>
     EOS
   end
 
@@ -59,34 +74,4 @@ class Cockroach < Formula
       system "#{bin}/cockroach", "quit"
     end
   end
-
-  #   def startup_plist
-  #     return <<-EOS
-  # <?xml version="1.0" encoding="UTF-8"?>
-  # <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-  # <plist version="1.0">
-  # <dict>
-  #   <key>Label</key>
-  #   <string>com.cockroachlabs.cockroachdb</string>
-  #   <key>ProgramArguments</key>
-  #   <array>
-  #     <string>#{bin}/cockroach</string>
-  #     <string>start</string>
-  #   </array>
-  #   <key>RunAtLoad</key>
-  #   <true/>
-  #   <key>KeepAlive</key>
-  #   <false/>
-  #   <key>UserName</key>
-  #   <string>#{`whoami`.chomp}</string>
-  #   <key>WorkingDirectory</key>
-  #   <string>#{HOMEBREW_PREFIX}</string>
-  #   <key>StandardErrorPath</key>
-  #   <string>#{var}/log/cockroachdb/output.log</string>
-  #   <key>StandardOutPath</key>
-  #   <string>#{var}/log/cockroachdb/output.log</string>
-  # </dict>
-  # </plist>
-  # EOS
-  #   end
 end
