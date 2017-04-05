@@ -10,7 +10,7 @@ class Cockroach < Formula
 
   def install
     ENV["GOPATH"] = buildpath
-    system "make", "install"
+    system "make", "install", "LINKFLAGS=-s"
     bin.install "bin/cockroach" => "cockroach"
   end
 
