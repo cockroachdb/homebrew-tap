@@ -3,7 +3,7 @@ class Cockroach < Formula
   homepage "https://www.cockroachlabs.com"
   version "beta-20170330"
   url "https://binaries.cockroachdb.com/cockroach-beta-20170330.src.tgz"
-  sha256 "578335950bd22b773f91cf8a30ebd8aa3906e8970c903aa1b04c737b2109a442"
+  sha256 "884b3c0342abb939666a39c3b198d1521eee795cdd0bb77205a47c45e00fab6e"
   head "https://github.com/cockroachdb/cockroach.git"
 
   depends_on "go" => :build
