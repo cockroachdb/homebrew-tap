@@ -1,9 +1,9 @@
 class Cockroach < Formula
   desc "Distributed SQL database"
   homepage "https://www.cockroachlabs.com"
-  version "beta-20170330"
-  url "https://binaries.cockroachdb.com/cockroach-beta-20170330.src.tgz"
-  sha256 "884b3c0342abb939666a39c3b198d1521eee795cdd0bb77205a47c45e00fab6e"
+  version "beta-20170413"
+  url "https://binaries.cockroachdb.com/cockroach-beta-20170413.src.tgz"
+  sha256 "197159b6ec6cabea331521f4c0642f66d1e04f3be66ad95017ab802d7585ae81"
   head "https://github.com/cockroachdb/cockroach.git"
 
   depends_on "go" => :build
