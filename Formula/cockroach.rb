@@ -6,11 +6,13 @@ class Cockroach < Formula
   sha256 "5eb815626d1165e7973169ba7098534dd374f0934a20e59b186d6be4e5602a87"
   head "https://github.com/cockroachdb/cockroach.git"
 
+  depends_on "cmake" => :build
   depends_on "go" => :build
+  depends_on "xz" => :build
 
   def install
     ENV["GOPATH"] = buildpath
-    system "make", "install", "LINKFLAGS=-s"
+    system "make", "install"
     bin.install "bin/cockroach" => "cockroach"
   end
 
