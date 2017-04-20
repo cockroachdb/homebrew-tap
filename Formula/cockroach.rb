@@ -10,6 +10,8 @@ class Cockroach < Formula
   depends_on "go" => :build
   depends_on "xz" => :build
 
+  patch :DATA
+
   def install
     ENV["GOPATH"] = buildpath
     system "make", "install"
@@ -78,3 +80,33 @@ class Cockroach < Formula
     end
   end
 end
+__END__
+From 0175f03ecdec9f02e4502dd69c53a775a58c3195 Mon Sep 17 00:00:00 2001
+From: Nikhil Benesch <nikhil.benesch@gmail.com>
+Date: Thu, 20 Apr 2017 19:06:14 -0400
+Subject: [PATCH] build: explicitly specify paths to vendored jemalloc
+
+Otherwise, when building with Homebrew on a system with jemalloc
+installed, /usr/local/include/jemalloc.h will take precedence over our
+bundled jemalloc, and missing symbols abound.
+---
+ build/common.mk | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/build/common.mk b/build/common.mk
+index a8bca56ed..1cd0e7c46 100644
+--- a/src/github.com/cockroachdb/cockroach/build/common.mk
++++ b/src/github.com/cockroachdb/cockroach/build/common.mk
+@@ -340,7 +340,7 @@ $(ROCKSDB_DIR)/Makefile: $(C_DEPS_DIR)/rocksdb.src.tar.xz | libsnappy libjemallo
+ 	cd $(ROCKSDB_DIR) && cmake $(CMAKE_FLAGS) $(ROCKSDB_SRC_DIR) \
+ 	  $(if $(findstring release,$(TYPE)),-DWITH_$(if $(ISWINDOWS),AVX2,SSE42)=ON) \
+ 	  -DSNAPPY_LIBRARIES=$(SNAPPY_DIR)/.libs/libsnappy.a -DSNAPPY_INCLUDE_DIR=$(SNAPPY_SRC_DIR) -DWITH_SNAPPY=ON \
+-	  -DJEMALLOC_ROOT_DIR=$(JEMALLOC_DIR) -DWITH_JEMALLOC=ON
++	  -DJEMALLOC_LIBRARIES=$(JEMALLOC_DIR)/lib/libjemalloc.a -DJEMALLOC_INCLUDE_DIR=$(JEMALLOC_DIR)/include -DWITH_JEMALLOC=ON
+ 
+ $(SNAPPY_DIR)/Makefile: $(C_DEPS_DIR)/snappy.src.tar.xz | $(SNAPPY_SRC_DIR)
+ 	mkdir -p $(SNAPPY_DIR)
+-- 
+2.12.1
+
+
