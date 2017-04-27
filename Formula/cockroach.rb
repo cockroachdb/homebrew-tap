@@ -48,6 +48,8 @@ class Cockroach < Formula
         <string>start</string>
         <string>--store=#{var}/cockroach/</string>
         <string>--http-port=26256</string>
+        <string>--insecure</string>
+        <string>--host=localhost</string>
       </array>
       <key>WorkingDirectory</key>
       <string>#{var}</string>
