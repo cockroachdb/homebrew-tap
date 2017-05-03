@@ -31,7 +31,7 @@ class Cockroach < Formula
     EOS
   end
 
-  plist_options :manual => "cockroach start"
+  plist_options :manual => "cockroach start --insecure"
 
   def plist; <<-EOS.undent
     <?xml version="1.0" encoding="UTF-8"?>
@@ -62,13 +62,13 @@ class Cockroach < Formula
 
   test do
     begin
-      system "#{bin}/cockroach", "start", "--background"
-      pipe_output("#{bin}/cockroach sql", <<-EOS.undent)
+      system "#{bin}/cockroach", "start", "--insecure", "--background"
+      pipe_output("#{bin}/cockroach sql --insecure", <<-EOS.undent)
         CREATE DATABASE bank;
         CREATE TABLE bank.accounts (id INT PRIMARY KEY, balance DECIMAL);
         INSERT INTO bank.accounts VALUES (1, 1000.50);
       EOS
-      output = pipe_output("#{bin}/cockroach sql --format=csv",
+      output = pipe_output("#{bin}/cockroach sql --insecure --format=csv",
         "SELECT * FROM bank.accounts;")
       assert_equal <<-EOS.undent, output
         1 row
@@ -76,7 +76,7 @@ class Cockroach < Formula
         1,1000.50
       EOS
     ensure
-      system "#{bin}/cockroach", "quit"
+      system "#{bin}/cockroach", "quit", "--insecure"
     end
   end
 end
