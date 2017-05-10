@@ -1,9 +1,9 @@
 class Cockroach < Formula
   desc "Distributed SQL database"
   homepage "https://www.cockroachlabs.com"
-  version "1.0-rc.2"
-  url "https://binaries.cockroachdb.com/cockroach-v1.0-rc.2.src.tgz"
-  sha256 "f4b2a32748427b7648f589214e24a5ffc40719e56cb97859c859bf0009ddd543"
+  version "1.0"
+  url "https://binaries.cockroachdb.com/cockroach-v1.0.src.tgz"
+  sha256 "ca87b10eec688195e0df4f85431b019f2980ae4b511ee321f91f945315efeb76"
   head "https://github.com/cockroachdb/cockroach.git"
 
   depends_on "cmake" => :build
@@ -11,8 +11,7 @@ class Cockroach < Formula
   depends_on "xz" => :build
 
   def install
-    system "make", "build"
-    bin.install "src/github.com/cockroachdb/cockroach/cockroach" => "cockroach"
+    system "make", "install", "prefix=#{prefix}"
   end
 
   def caveats; <<-EOS.undent
