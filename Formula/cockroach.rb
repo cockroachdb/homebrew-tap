@@ -2,16 +2,21 @@ class Cockroach < Formula
   desc "Distributed SQL database"
   homepage "https://www.cockroachlabs.com"
   version "1.0"
+  revision 1
   url "https://binaries.cockroachdb.com/cockroach-v1.0.src.tgz"
   sha256 "ca87b10eec688195e0df4f85431b019f2980ae4b511ee321f91f945315efeb76"
   head "https://github.com/cockroachdb/cockroach.git"
 
-  depends_on "cmake" => :build
-  depends_on "go" => :build
-  depends_on "xz" => :build
-
   def install
-    system "make", "install", "prefix=#{prefix}"
+    raise <<-EOS.undent
+      The CockroachDB formula has moved into Homebrew proper.
+      Please instead run:
+
+          $ brew uninstall cockroachdb/cockroach/cockroach
+          $ brew untap cockroachdb/cockroach
+          $ brew install cockroach
+
+    EOS
   end
 
   def caveats; <<-EOS.undent
