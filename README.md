@@ -1,9 +1,8 @@
 # Homebrew CockroachDB
 
-🚫 **THIS REPOSITORY IS DEPRECATED.** 🚫
+🎉 **[CockroachDB] is now included in Homebrew core.** 🎉
 
-[CockroachDB] is now included in Homebrew core. If you never installed
-[CockroachDB] from this tap, you can install directly from Homebrew:
+If you never installed [CockroachDB] from this tap, you can install directly from Homebrew:
 
 ```shell
 $ brew install cockroach
