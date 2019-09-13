@@ -9,6 +9,10 @@ class Cockroach < Formula
 
   def install
     bin.install "cockroach"
+    system "#{bin}/cockroach gen man --path=#{man1}"
+    system "mkdir -p #{bash_completion} #{zsh_completion}"
+    system "#{bin}/cockroach gen autocomplete bash --out=#{bash_completion}/cockroach"
+    system "#{bin}/cockroach gen autocomplete zsh --out=#{zsh_completion}/_cockroach"
   end
 
   def caveats; <<~EOS
