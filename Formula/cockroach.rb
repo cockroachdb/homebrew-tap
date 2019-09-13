@@ -58,13 +58,18 @@ class Cockroach < Formula
     begin
       # Redirect stdout and stderr to a file, or else  `brew test --verbose`
       # will hang forever as it waits for stdout and stderr to close.
-      system "#{bin}/cockroach start --insecure --background &> start.out"
-      pipe_output("#{bin}/cockroach sql --insecure", <<~EOS)
+      # TODO(bdarnell): this mkfifo will be unnecessary in 19.2 (#39300)
+      system "mkfifo listen_url_fifo"
+      system "#{bin}/cockroach start --insecure --background --listen-addr=127.0.0.1:0 --http-addr=127.0.0.1:0 --listening-url-file=listen_url_fifo&> start.out"
+      # TODO(bdarnell): remove the X from this variable and the --url flags after
+      # https://github.com/cockroachdb/cockroach/issues/40747 is fixed.
+      ENV["XCOCKROACH_URL"] = File.read("listen_url_fifo").strip
+      pipe_output("#{bin}/cockroach sql --url=$XCOCKROACH_URL", <<~EOS)
         CREATE DATABASE bank;
         CREATE TABLE bank.accounts (id INT PRIMARY KEY, balance DECIMAL);
         INSERT INTO bank.accounts VALUES (1, 1000.50);
       EOS
-      output = pipe_output("#{bin}/cockroach sql --insecure --format=csv",
+      output = pipe_output("#{bin}/cockroach sql --url=$XCOCKROACH_URL --format=csv",
         "SELECT * FROM bank.accounts;")
       assert_equal <<~EOS, output
         id,balance
@@ -80,7 +85,7 @@ class Cockroach < Formula
       end
       raise e
     ensure
-      system "#{bin}/cockroach", "quit", "--insecure"
+      system "#{bin}/cockroach quit --url=$XCOCKROACH_URL"
     end
   end
 end
