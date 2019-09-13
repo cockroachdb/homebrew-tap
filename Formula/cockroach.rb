@@ -1,32 +1,14 @@
 class Cockroach < Formula
   desc "Distributed SQL database"
   homepage "https://www.cockroachlabs.com"
-  url "https://binaries.cockroachdb.com/cockroach-v19.1.4.src.tgz"
+  url "https://binaries.cockroachdb.com/cockroach-v19.1.4.darwin-10.9-amd64.tgz"
   version "19.1.4"
-  sha256 "d819167dc109b566511cb6cef9aadc8c4f07b1be6a8b3108f4bbd14808d21faf"
-  head "https://github.com/cockroachdb/cockroach.git"
+  sha256 "6911796049865aa1c27d11904893ea6f7a031bdfe90f531a4ea510fde3568439"
 
-  bottle do
-    cellar :any_skip_relocation
-    sha256 "82d20462ca26fcdaad2c4639582bc3cbb10fee2ca9fb63d1944648dc9fdf461a" => :mojave
-    sha256 "247cea9630fdc06c497c42ccf6290b601870eaac96a14ec91a993e87bbf5acb1" => :high_sierra
-    sha256 "f55c8f203ff3c49312641f81d7a15c4f3bcc02c5a5585981574b11161eeda62d" => :sierra
-  end
-
-  depends_on "autoconf" => :build
-  depends_on "cmake" => :build
-  depends_on "go" => :build
-  depends_on "make" => :build
-  depends_on "xz" => :build
+  bottle :unneeded
 
   def install
-    # The GNU Make that ships with macOS Mojave (v3.81 at the time of writing) has a bug
-    # that causes it to loop infinitely when trying to build cockroach. Use
-    # the more up-to-date make that Homebrew provides.
-    ENV.prepend_path "PATH", Formula["make"].opt_libexec/"gnubin"
-    # Build only the OSS components
-    system "make", "buildoss"
-    system "make", "install", "prefix=#{prefix}", "BUILDTYPE=release"
+    bin.install "cockroach"
   end
 
   def caveats; <<~EOS
