@@ -12,10 +12,13 @@ class Cockroach < Formula
 
   def install
     bin.install "cockroach"
-    system "#{bin}/cockroach gen man --path=#{man1}"
-    system "mkdir -p #{bash_completion} #{zsh_completion}"
-    system "#{bin}/cockroach gen autocomplete bash --out=#{bash_completion}/cockroach"
-    system "#{bin}/cockroach gen autocomplete zsh --out=#{zsh_completion}/_cockroach"
+    system "#{bin}/cockroach", "gen", "man", "--path=#{man1}"
+
+    bash_completion.mkpath
+    system "#{bin}/cockroach", "gen", "autocomplete", "bash", "--out=#{bash_completion}/cockroach"
+
+    zsh_completion.mkpath
+    system "#{bin}/cockroach", "gen", "autocomplete", "zsh", "--out=#{zsh_completion}/_cockroach"
   end
 
   def caveats; <<~EOS
@@ -66,7 +69,7 @@ class Cockroach < Formula
       # Redirect stdout and stderr to a file, or else  `brew test --verbose`
       # will hang forever as it waits for stdout and stderr to close.
       # TODO(bdarnell): this mkfifo will be unnecessary in 19.2 (#39300)
-      system "mkfifo listen_url_fifo"
+      system "mkfifo", "listen_url_fifo"
       system "#{bin}/cockroach start --insecure --background --listen-addr=127.0.0.1:0 --http-addr=127.0.0.1:0 --listening-url-file=listen_url_fifo&> start.out"
       # TODO(bdarnell): remove the X from this variable and the --url flags after
       # https://github.com/cockroachdb/cockroach/issues/40747 is fixed.
@@ -92,7 +95,7 @@ class Cockroach < Formula
       end
       raise e
     ensure
-      system "#{bin}/cockroach quit --url=$XCOCKROACH_URL"
+      system "#{bin}/cockroach", "quit", "--url=$XCOCKROACH_URL"
     end
   end
 end
