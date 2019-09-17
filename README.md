@@ -5,13 +5,13 @@ This is the offical source for installing CockroachDB with Homebrew.
 ## Installing
 
 ```shell
-$ brew install cockroachdb/cockroach/cockroach
+$ brew install cockroachdb/tap/cockroach
 ```
 
 Alternately, you can configure the tap and install the package separately:
 
 ``` shell
-$ brew tap cockroachdb/cockroach
+$ brew tap cockroachdb/tap
 $ brew install cockroach
 ```
 
