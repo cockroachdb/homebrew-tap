@@ -1,18 +1,17 @@
-# Homebrew CockroachDB
+# CockroachDB Homebrew Tap
 
-🎉 **[CockroachDB] is now included in Homebrew core.** 🎉
+This is the offical source for installing CockroachDB with Homebrew.
 
-If you never installed [CockroachDB] from this tap, you can install directly from Homebrew:
+## Installing
 
 ```shell
-$ brew install cockroach
+$ brew install cockroachdb/cockroach/cockroach
 ```
 
-Otherwise, remove this tap, then re-install from Homebrew core:
+Alternately, you can configure the tap and install the package separately:
 
-```shell
-$ brew uninstall cockroachdb/cockroach/cockroach
-$ brew untap cockroachdb/cockroach
+``` shell
+$ brew tap cockroachdb/cockroach
 $ brew install cockroach
 ```
 

@@ -1,42 +1,43 @@
 class Cockroach < Formula
   desc "Distributed SQL database"
   homepage "https://www.cockroachlabs.com"
-  version "1.0"
+  url "https://binaries.cockroachdb.com/cockroach-v19.1.4.darwin-10.9-amd64.tgz"
+  version "19.1.4"
+  sha256 "6911796049865aa1c27d11904893ea6f7a031bdfe90f531a4ea510fde3568439"
+  # This revision facilitates conversion from homebrew-core to the tap.
+  # TODO(bdarnell): Remove this once we've updated to a version that never appeared in homebrew-core.
   revision 1
-  url "https://binaries.cockroachdb.com/cockroach-v1.0.src.tgz"
-  sha256 "ca87b10eec688195e0df4f85431b019f2980ae4b511ee321f91f945315efeb76"
-  head "https://github.com/cockroachdb/cockroach.git"
+
+  bottle :unneeded
 
   def install
-    raise <<-EOS.undent
-      The CockroachDB formula has moved into Homebrew proper.
-      Please instead run:
+    bin.install "cockroach"
+    system "#{bin}/cockroach", "gen", "man", "--path=#{man1}"
 
-          $ brew uninstall cockroachdb/cockroach/cockroach
-          $ brew untap cockroachdb/cockroach
-          $ brew install cockroach
+    bash_completion.mkpath
+    system "#{bin}/cockroach", "gen", "autocomplete", "bash", "--out=#{bash_completion}/cockroach"
 
-    EOS
+    zsh_completion.mkpath
+    system "#{bin}/cockroach", "gen", "autocomplete", "zsh", "--out=#{zsh_completion}/_cockroach"
   end
 
-  def caveats; <<-EOS.undent
-    CockroachDB is a distributed database intended for multi-server deployments.
+  def caveats; <<~EOS
     For local development only, this formula ships a launchd configuration to
     start a single-node cluster that stores its data under:
       #{var}/cockroach/
     Instead of the default port of 8080, the node serves its admin UI at:
-      #{Formatter.url('http://localhost:26256')}
+      #{Formatter.url("http://localhost:26256")}
 
     Do NOT use this cluster to store data you care about; it runs in insecure
     mode and may expose data publicly in e.g. a DNS rebinding attack. To run
     CockroachDB securely, please see:
-      #{Formatter.url('https://www.cockroachlabs.com/docs/secure-a-cluster.html')}
-    EOS
+      #{Formatter.url("https://www.cockroachlabs.com/docs/secure-a-cluster.html")}
+  EOS
   end
 
   plist_options :manual => "cockroach start --insecure"
 
-  def plist; <<-EOS.undent
+  def plist; <<~EOS
     <?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
     <plist version="1.0">
@@ -60,26 +61,41 @@ class Cockroach < Formula
       <true/>
     </dict>
     </plist>
-    EOS
+  EOS
   end
 
   test do
     begin
-      system "#{bin}/cockroach", "start", "--insecure", "--background"
-      pipe_output("#{bin}/cockroach sql --insecure", <<-EOS.undent)
+      # Redirect stdout and stderr to a file, or else  `brew test --verbose`
+      # will hang forever as it waits for stdout and stderr to close.
+      # TODO(bdarnell): this mkfifo will be unnecessary in 19.2 (#39300)
+      system "mkfifo", "listen_url_fifo"
+      system "#{bin}/cockroach start --insecure --background --listen-addr=127.0.0.1:0 --http-addr=127.0.0.1:0 --listening-url-file=listen_url_fifo&> start.out"
+      # TODO(bdarnell): remove the X from this variable and the --url flags after
+      # https://github.com/cockroachdb/cockroach/issues/40747 is fixed.
+      ENV["XCOCKROACH_URL"] = File.read("listen_url_fifo").strip
+      pipe_output("#{bin}/cockroach sql --url=$XCOCKROACH_URL", <<~EOS)
         CREATE DATABASE bank;
         CREATE TABLE bank.accounts (id INT PRIMARY KEY, balance DECIMAL);
         INSERT INTO bank.accounts VALUES (1, 1000.50);
       EOS
-      output = pipe_output("#{bin}/cockroach sql --insecure --format=csv",
+      output = pipe_output("#{bin}/cockroach sql --url=$XCOCKROACH_URL --format=csv",
         "SELECT * FROM bank.accounts;")
-      assert_equal <<-EOS.undent, output
-        1 row
+      assert_equal <<~EOS, output
         id,balance
         1,1000.50
       EOS
+    rescue => e
+      # If an error occurs, attempt to print out any messages from the
+      # server.
+      begin
+        $stderr.puts "server messages:", File.read("start.out")
+      rescue
+        $stderr.puts "unable to load messages from start.out"
+      end
+      raise e
     ensure
-      system "#{bin}/cockroach", "quit", "--insecure"
+      system "#{bin}/cockroach", "quit", "--url=$XCOCKROACH_URL"
     end
   end
 end
