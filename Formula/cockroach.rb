@@ -1,9 +1,9 @@
 class Cockroach < Formula
   desc "Distributed SQL database"
   homepage "https://www.cockroachlabs.com"
-  url "https://binaries.cockroachdb.com/cockroach-v19.1.4.darwin-10.9-amd64.tgz"
-  version "19.1.4"
-  sha256 "6911796049865aa1c27d11904893ea6f7a031bdfe90f531a4ea510fde3568439"
+  url "https://binaries.cockroachdb.com/cockroach-v19.1.5.darwin-10.9-amd64.tgz"
+  version "19.1.5"
+  sha256 "fbebcd4011c58bf85d709fa679ac52bde9475be8f3501ea6ed90318b3a67967f"
   # This revision facilitates conversion from homebrew-core to the tap.
   # TODO(bdarnell): Remove this once we've updated to a version that never appeared in homebrew-core.
   revision 1
