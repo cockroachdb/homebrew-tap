@@ -4,9 +4,6 @@ class Cockroach < Formula
   url "https://binaries.cockroachdb.com/cockroach-v19.2.0.darwin-10.9-amd64.tgz"
   version "19.2.0"
   sha256 "f6d32bbb78762b0c99ff5c983a912a9890c384ca616c16f4ae287a25d753f948"
-  # This revision facilitates conversion from homebrew-core to the tap.
-  # TODO(bdarnell): Remove this once we've updated to a version that never appeared in homebrew-core.
-  revision 1
 
   bottle :unneeded
 
