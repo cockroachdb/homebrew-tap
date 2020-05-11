@@ -3,7 +3,7 @@ class Cockroach < Formula
   homepage "https://www.cockroachlabs.com"
   url "https://binaries.cockroachdb.com/cockroach-v20.1.0.darwin-10.9-amd64.tgz"
   version "20.1.0"
-  sha256 "960e06b7dfc5e1e513e6e5018d3fb800cb96df716792e7f8592c99310ba18652"
+  sha256 "d92076788f633742dd25e8383fb337111237b4139d9d2fdc460debdd303917e4"
 
   bottle :unneeded
 
