@@ -1,9 +1,9 @@
 class Cockroach < Formula
   desc "Distributed SQL database"
   homepage "https://www.cockroachlabs.com"
-  url "https://binaries.cockroachdb.com/cockroach-v20.1.4.darwin-10.9-amd64.tgz"
-  version "20.1.4"
-  sha256 "eec2991f15cca185077c26409c510d6730671361bc2f70c24e14130afce15304"
+  url "https://binaries.cockroachdb.com/cockroach-v20.1.5.darwin-10.9-amd64.tgz"
+  version "20.1.5"
+  sha256 "f04be8f60a8b6d4b11581c61c2d360c6b4891e736279e9393d4ae9bbb4f3309f"
 
   bottle :unneeded
 
