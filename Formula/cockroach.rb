@@ -9,6 +9,22 @@ class Cockroach < Formula
 
   def install
     bin.install "cockroach"
+    lib.mkpath
+    mkdir "#{lib}/cockroach"
+    lib.install "lib/libgeos.dylib" => "cockroach/libgeos.dylib"
+    lib.install "lib/libgeos_c.dylib" => "cockroach/libgeos_c.dylib"
+
+    # Brew sets rpaths appropriately, but only if the rpaths are set
+    # to not include "@rpath". As such, use the #{lib} location for the
+    # rpaths.
+    system "install_name_tool", "-id",
+      "#{lib}/cockroach/libgeos.dylib", "#{lib}/cockroach/libgeos.dylib"
+    system "install_name_tool", "-id",
+      "#{lib}/cockroach/libgeos_c.1.dylib", "#{lib}/cockroach/libgeos_c.dylib"
+    system "install_name_tool", "-change",
+      "@rpath/libgeos.3.8.1.dylib", "#{lib}/cockroach/libgeos.dylib",
+      "#{lib}/cockroach/libgeos_c.dylib"
+
     system "#{bin}/cockroach", "gen", "man", "--path=#{man1}"
 
     bash_completion.mkpath
@@ -65,9 +81,10 @@ class Cockroach < Formula
     begin
       # Redirect stdout and stderr to a file, or else  `brew test --verbose`
       # will hang forever as it waits for stdout and stderr to close.
-      # TODO(bdarnell): this mkfifo will be unnecessary in 19.2 (#39300)
-      system "mkfifo", "listen_url_fifo"
-      system "#{bin}/cockroach start --insecure --background --listen-addr=127.0.0.1:0 --http-addr=127.0.0.1:0 --listening-url-file=listen_url_fifo&> start.out"
+      pid = fork do
+        exec "#{bin}/cockroach start-single-node --insecure --background --listen-addr=127.0.0.1:0 --http-addr=127.0.0.1:0 --listening-url-file=listen_url_fifo&> start.out"
+      end
+      sleep 2
       # TODO(bdarnell): remove the X from this variable and the --url flags after
       # https://github.com/cockroachdb/cockroach/issues/40747 is fixed.
       ENV["XCOCKROACH_URL"] = File.read("listen_url_fifo").strip
@@ -82,6 +99,12 @@ class Cockroach < Formula
         id,balance
         1,1000.50
       EOS
+      output = pipe_output("#{bin}/cockroach sql --url=$XCOCKROACH_URL --format=csv",
+        "SELECT ST_IsValid(ST_MakePoint(1, 1)) is_valid;")
+      assert_equal <<~EOS, output
+        is_valid
+        true
+      EOS
     rescue => e
       # If an error occurs, attempt to print out any messages from the
       # server.
@@ -92,7 +115,8 @@ class Cockroach < Formula
       end
       raise e
     ensure
-      system "#{bin}/cockroach", "quit", "--url=$XCOCKROACH_URL"
+      Process.kill("SIGINT", pid)
+      Process.wait(pid)
     end
   end
 end
