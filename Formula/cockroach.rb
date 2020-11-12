@@ -48,7 +48,7 @@ class Cockroach < Formula
   EOS
   end
 
-  plist_options :manual => "cockroach start --insecure"
+  plist_options :manual => "cockroach start-single-node --insecure"
 
   def plist; <<~EOS
     <?xml version="1.0" encoding="UTF-8"?>
@@ -60,7 +60,7 @@ class Cockroach < Formula
       <key>ProgramArguments</key>
       <array>
         <string>#{opt_bin}/cockroach</string>
-        <string>start</string>
+        <string>start-single-node</string>
         <string>--store=#{var}/cockroach/</string>
         <string>--http-port=26256</string>
         <string>--insecure</string>
