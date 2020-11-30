@@ -2,7 +2,7 @@ class Cockroach < Formula
   desc "Distributed SQL database"
   homepage "https://www.cockroachlabs.com"
   url "https://binaries.cockroachdb.com/cockroach-v20.2.2.darwin-10.9-amd64.tgz"
-  version "20.2.1"
+  version "20.2.2"
   sha256 "16a71f5a7adaa61fcc64cee0f556e14b357050230c8dd78e4c7d509eb6c93cce"
 
 
