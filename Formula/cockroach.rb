@@ -45,11 +45,11 @@ class Cockroach < Formula
     Do NOT use this cluster to store data you care about; it runs in insecure
     mode and may expose data publicly in e.g. a DNS rebinding attack. To run
     CockroachDB securely, please see:
-      #{Formatter.url("https://www.cockroachlabs.com/docs/secure-a-cluster.html")}
+      #{Formatter.url("https://www.cockroachlabs.com/docs/stable/secure-a-cluster.html")}
   EOS
   end
 
-  plist_options :manual => "cockroach start-single-node --insecure"
+  plist_options :manual => "cockroach start-single-node --insecure --http-port=26256 --host=localhost"
 
   def plist; <<~EOS
     <?xml version="1.0" encoding="UTF-8"?>
@@ -86,6 +86,7 @@ class Cockroach < Formula
         exec "#{bin}/cockroach start-single-node --insecure --background --listen-addr=127.0.0.1:0 --http-addr=127.0.0.1:0 --listening-url-file=listen_url_fifo&> start.out"
       end
       sleep 2
+
       # TODO(bdarnell): remove the X from this variable and the --url flags after
       # https://github.com/cockroachdb/cockroach/issues/40747 is fixed.
       ENV["XCOCKROACH_URL"] = File.read("listen_url_fifo").strip
