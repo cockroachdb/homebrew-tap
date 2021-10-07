@@ -5,6 +5,7 @@ class Cockroach < Formula
   version "21.1.10"
   sha256 "2931cd57274f0d2ab9cdc2da0de04f4f02615556574c5a88634581169af80e98"
 
+
   bottle :unneeded
 
   def install
