@@ -5,9 +5,6 @@ class Cockroach < Formula
   version "21.1.11"
   sha256 "b31cfc5e1e86e2e5ec9002cbb94c89aaf23bced71b343827fb22db02a673e64e"
 
-
-  bottle :unneeded
-
   def install
     bin.install "cockroach"
     lib.mkpath
