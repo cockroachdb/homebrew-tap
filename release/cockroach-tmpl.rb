@@ -4,9 +4,9 @@
 class Cockroach < Formula
   desc "Distributed SQL database"
   homepage "https://www.cockroachlabs.com"
-  url "https://binaries.cockroachdb.com/cockroach-v21.2.5.darwin-10.9-amd64.tgz"
-  version "21.2.5"
-  sha256 "d149b0b9602c3d1ca69b90f8e3d7d2c91146eb76fe61279b5e28e363592f81cd"
+  url "{{ .URL }}"
+  version "{{ .Version }}"
+  sha256 "{{ .SHA256 }}"
 
   def install
     bin.install "cockroach"
@@ -122,4 +122,3 @@ class Cockroach < Formula
     end
   end
 end
-
