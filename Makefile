@@ -1,4 +1,4 @@
-# Usage example: make VERSION 21.2.5
+# Usage example: make VERSION=21.2.5
 
 ifndef VERSION
 $(error define VERSION)

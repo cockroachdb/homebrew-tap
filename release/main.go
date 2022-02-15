@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 	"text/template"
 )
 
@@ -22,7 +23,8 @@ func main() {
 		fmt.Println("Usage: go run main.go version")
 		os.Exit(1)
 	}
-	out, err := processTemplate(os.Args[1])
+	version := strings.TrimPrefix(os.Args[1], "v")
+	out, err := processTemplate(version)
 	if err != nil {
 		panic(err)
 	}
@@ -36,22 +38,20 @@ func sha256FromURL(url string) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	hasher := sha256.New()
 	var buf bytes.Buffer
 	if _, err := io.Copy(&buf, resp.Body); err != nil {
 		return "", fmt.Errorf("cannot copy: %w", err)
 	}
+	hasher := sha256.New()
 	hasher.Write(buf.Bytes())
 	return hex.EncodeToString(hasher.Sum(nil)), nil
 }
 
 func processTemplate(version string) (string, error) {
 	t, err := template.ParseFiles("cockroach-tmpl.rb")
-
 	if err != nil {
 		return "", fmt.Errorf("failed to parse template: %w", err)
 	}
-
 	url := fmt.Sprintf("https://binaries.cockroachdb.com/cockroach-v%s.darwin-10.9-amd64.tgz", version)
 	sha256, err := sha256FromURL(url)
 	if err != nil {
