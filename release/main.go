@@ -12,6 +12,13 @@ import (
 	"text/template"
 )
 
+const (
+	cockroach    = "cockroach"
+	ccloud       = "ccloud"
+	cockroachURL = "https://binaries.cockroachdb.com/cockroach-v%s.darwin-10.9-amd64.tgz"
+	ccloudURL    = "https://binaries.cockroachdb.com/ccloud/ccloud_darwin-amd64_%s.tar.gz"
+)
+
 type templateArgs struct {
 	Version string
 	URL     string
@@ -19,12 +26,13 @@ type templateArgs struct {
 }
 
 func main() {
-	if len(os.Args) != 2 {
-		fmt.Println("Usage: go run main.go version")
+	if len(os.Args) != 3 {
+		fmt.Println("Usage: go run main.go <cockroach|ccloud> <version>")
 		os.Exit(1)
 	}
-	version := strings.TrimPrefix(os.Args[1], "v")
-	out, err := processTemplate(version)
+	product := os.Args[1]
+	version := strings.TrimPrefix(os.Args[2], "v")
+	out, err := processTemplate(product, version)
 	if err != nil {
 		panic(err)
 	}
@@ -47,12 +55,18 @@ func sha256FromURL(url string) (string, error) {
 	return hex.EncodeToString(hasher.Sum(nil)), nil
 }
 
-func processTemplate(version string) (string, error) {
-	t, err := template.ParseFiles("cockroach-tmpl.rb")
+func processTemplate(product, version string) (string, error) {
+	t, err := template.ParseFiles(fmt.Sprintf("%s-tmpl.rb", product))
 	if err != nil {
 		return "", fmt.Errorf("failed to parse template: %w", err)
 	}
-	url := fmt.Sprintf("https://binaries.cockroachdb.com/cockroach-v%s.darwin-10.9-amd64.tgz", version)
+	var urlFmt string
+	if product == cockroach {
+		urlFmt = cockroachURL
+	} else if product == ccloud {
+		urlFmt = ccloudURL
+	}
+	url := fmt.Sprintf(urlFmt, version)
 	sha256, err := sha256FromURL(url)
 	if err != nil {
 		return "", fmt.Errorf("failed to calculate SHA256: %w", err)

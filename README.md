@@ -1,11 +1,12 @@
 # CockroachDB Homebrew Tap
 
-This is the offical source for installing CockroachDB with Homebrew.
+This is the official source for installing CockroachDB and the CockroachDB Cloud CLI with Homebrew.
 
 ## Installing
 
 ```shell
 $ brew install cockroachdb/tap/cockroach
+$ brew install cockroachdb/tap/ccloud
 ```
 
 Alternately, you can configure the tap and install the package separately:
@@ -13,6 +14,7 @@ Alternately, you can configure the tap and install the package separately:
 ``` shell
 $ brew tap cockroachdb/tap
 $ brew install cockroach
+$ brew install ccloud
 ```
 
 See our complete [installation instructions] for alternative installation
