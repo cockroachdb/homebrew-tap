@@ -63,6 +63,7 @@ class Cockroach < Formula
         <string>#{opt_bin}/cockroach</string>
         <string>start-single-node</string>
         <string>--store=#{var}/cockroach/</string>
+        <string>--spatial-libs=#{lib}/cockroach</string>
         <string>--http-port=26256</string>
         <string>--insecure</string>
         <string>--host=localhost</string>
