@@ -4,9 +4,9 @@
 class Cockroach < Formula
   desc "Distributed SQL database"
   homepage "https://www.cockroachlabs.com"
-  url "https://binaries.cockroachdb.com/cockroach-v22.1.0.darwin-10.9-amd64.tgz"
-  version "22.1.0"
-  sha256 "7ec52780f46610595fd89df46cf6fa6db9db94b3027bdb997088cc9649b9ffe2"
+  url "https://binaries.cockroachdb.com/cockroach-v22.1.1.darwin-10.9-amd64.tgz"
+  version "22.1.1"
+  sha256 "756ff5bcf7df5bc2faea0046091f46847307c0dfce76e243ffdf1a9293137b7c"
 
   def install
     bin.install "cockroach"
@@ -63,6 +63,7 @@ class Cockroach < Formula
         <string>#{opt_bin}/cockroach</string>
         <string>start-single-node</string>
         <string>--store=#{var}/cockroach/</string>
+        <string>--spatial-libs=#{lib}/cockroach</string>
         <string>--http-port=26256</string>
         <string>--insecure</string>
         <string>--host=localhost</string>
