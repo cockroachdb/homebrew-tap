@@ -44,6 +44,9 @@ func sha256FromURL(url string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("cannot download: %w", err)
 	}
+	if resp.StatusCode >= 400 {
+		return "", fmt.Errorf("unexpected status code %d", resp.StatusCode)
+	}
 	defer resp.Body.Close()
 
 	var buf bytes.Buffer

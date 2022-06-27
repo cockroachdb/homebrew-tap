@@ -11,4 +11,5 @@ endif
 
 generate:
 	@cd release && \
-		go run main.go $(PRODUCT) $(VERSION) > ../Formula/$(PRODUCT).rb
+		go run main.go $(PRODUCT) $(VERSION) > ../Formula/$(PRODUCT).rb.tmp && \
+		mv ../Formula/$(PRODUCT).rb.tmp ../Formula/$(PRODUCT).rb
