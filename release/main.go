@@ -26,13 +26,14 @@ type templateArgs struct {
 }
 
 func main() {
-	if len(os.Args) != 3 {
-		fmt.Println("Usage: go run main.go <cockroach|ccloud> <version>")
+	if len(os.Args) != 4 {
+		fmt.Println("Usage: go run main.go <cockroach|ccloud> <version> <template file>")
 		os.Exit(1)
 	}
 	product := os.Args[1]
 	version := strings.TrimPrefix(os.Args[2], "v")
-	out, err := processTemplate(product, version)
+	templateFile := os.Args[3]
+	out, err := processTemplate(product, version, templateFile)
 	if err != nil {
 		panic(err)
 	}
@@ -45,7 +46,7 @@ func sha256FromURL(url string) (string, error) {
 		return "", fmt.Errorf("cannot download: %w", err)
 	}
 	if resp.StatusCode >= 400 {
-		return "", fmt.Errorf("unexpected status code %d", resp.StatusCode)
+		return "", fmt.Errorf("unexpected status code %d for %s", resp.StatusCode, url)
 	}
 	defer resp.Body.Close()
 
@@ -58,8 +59,8 @@ func sha256FromURL(url string) (string, error) {
 	return hex.EncodeToString(hasher.Sum(nil)), nil
 }
 
-func processTemplate(product, version string) (string, error) {
-	t, err := template.ParseFiles(fmt.Sprintf("%s-tmpl.rb", product))
+func processTemplate(product, version string, templateFile string) (string, error) {
+	t, err := template.ParseFiles(templateFile)
 	if err != nil {
 		return "", fmt.Errorf("failed to parse template: %w", err)
 	}

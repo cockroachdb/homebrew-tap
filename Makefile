@@ -10,6 +10,7 @@ $(error define VERSION)
 endif
 
 generate:
-	@cd release && \
-		go run main.go $(PRODUCT) $(VERSION) > ../Formula/$(PRODUCT).rb.tmp && \
-		mv ../Formula/$(PRODUCT).rb.tmp ../Formula/$(PRODUCT).rb
+	bazel build //release && \
+	  $$(bazel info bazel-bin)/release/release_/release \
+	  $(PRODUCT) $(VERSION) release/$(PRODUCT)-tmpl.rb > Formula/$(PRODUCT).rb.tmp && \
+	  mv Formula/$(PRODUCT).rb.tmp Formula/$(PRODUCT).rb
