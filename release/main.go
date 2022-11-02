@@ -13,16 +13,19 @@ import (
 )
 
 const (
-	cockroach    = "cockroach"
-	ccloud       = "ccloud"
-	cockroachURL = "https://binaries.cockroachdb.com/cockroach-v%s.darwin-10.9-amd64.tgz"
-	ccloudURL    = "https://binaries.cockroachdb.com/ccloud/ccloud_darwin-amd64_%s.tar.gz"
+	cockroach         = "cockroach"
+	ccloud            = "ccloud"
+	cockroachURLIntel = "https://binaries.cockroachdb.com/cockroach-v%s.darwin-10.9-amd64.tgz"
+	cockroachURLARM   = "https://binaries.cockroachdb.com/cockroach-v%s.darwin-11.0-aarch64.tgz"
+	ccloudURL         = "https://binaries.cockroachdb.com/ccloud/ccloud_darwin-amd64_%s.tar.gz"
 )
 
 type templateArgs struct {
-	Version string
-	URL     string
-	SHA256  string
+	Version     string
+	IntelURL    string
+	ARMURL      string
+	IntelSHA256 string
+	ARMSHA256   string
 }
 
 func main() {
@@ -64,21 +67,31 @@ func processTemplate(product, version string, templateFile string) (string, erro
 	if err != nil {
 		return "", fmt.Errorf("failed to parse template: %w", err)
 	}
-	var urlFmt string
+	data := templateArgs{Version: version}
+
 	if product == cockroach {
-		urlFmt = cockroachURL
+		url := fmt.Sprintf(cockroachURLIntel, version)
+		sha256, err := sha256FromURL(url)
+		if err != nil {
+			return "", fmt.Errorf("failed to calculate SHA256: %w", err)
+		}
+		data.IntelURL = url
+		data.IntelSHA256 = sha256
+		urlARM := fmt.Sprintf(cockroachURLARM, version)
+		sha256ARM, err := sha256FromURL(urlARM)
+		if err != nil {
+			return "", fmt.Errorf("failed to calculate SHA256: %w", err)
+		}
+		data.ARMURL = urlARM
+		data.ARMSHA256 = sha256ARM
 	} else if product == ccloud {
-		urlFmt = ccloudURL
-	}
-	url := fmt.Sprintf(urlFmt, version)
-	sha256, err := sha256FromURL(url)
-	if err != nil {
-		return "", fmt.Errorf("failed to calculate SHA256: %w", err)
-	}
-	data := templateArgs{
-		Version: version,
-		URL:     url,
-		SHA256:  sha256,
+		url := fmt.Sprintf(ccloudURL, version)
+		sha256, err := sha256FromURL(url)
+		if err != nil {
+			return "", fmt.Errorf("failed to calculate SHA256: %w", err)
+		}
+		data.IntelURL = url
+		data.IntelSHA256 = sha256
 	}
 	var buf bytes.Buffer
 	err = t.Execute(&buf, data)

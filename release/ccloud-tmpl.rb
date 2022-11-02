@@ -4,9 +4,9 @@
 class Ccloud < Formula
   desc "CockroachDB Cloud CLI"
   homepage "https://www.cockroachlabs.com"
-  url "{{ .URL }}"
   version "{{ .Version }}"
-  sha256 "{{ .SHA256 }}"
+  url "{{ .IntelURL }}"
+  sha256 "{{ .IntelSHA256 }}"
 
   def install
     bin.install "ccloud"
