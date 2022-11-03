@@ -14,9 +14,10 @@ import (
 
 const (
 	cockroach         = "cockroach"
+	cockroachSQL      = "cockroach-sql"
 	ccloud            = "ccloud"
-	cockroachURLIntel = "https://binaries.cockroachdb.com/cockroach-v%s.darwin-10.9-amd64.tgz"
-	cockroachURLARM   = "https://binaries.cockroachdb.com/cockroach-v%s.darwin-11.0-aarch64.tgz"
+	cockroachURLIntel = "https://binaries.cockroachdb.com/%s-v%s.darwin-10.9-amd64.tgz"
+	cockroachURLARM   = "https://binaries.cockroachdb.com/%s-v%s.darwin-11.0-aarch64.tgz"
 	ccloudURL         = "https://binaries.cockroachdb.com/ccloud/ccloud_darwin-amd64_%s.tar.gz"
 )
 
@@ -30,7 +31,7 @@ type templateArgs struct {
 
 func main() {
 	if len(os.Args) != 4 {
-		fmt.Println("Usage: go run main.go <cockroach|ccloud> <version> <template file>")
+		fmt.Println("Usage: go run main.go <cockroach|cockroach-sql|ccloud> <version> <template file>")
 		os.Exit(1)
 	}
 	product := os.Args[1]
@@ -69,15 +70,15 @@ func processTemplate(product, version string, templateFile string) (string, erro
 	}
 	data := templateArgs{Version: version}
 
-	if product == cockroach {
-		url := fmt.Sprintf(cockroachURLIntel, version)
+	if product == cockroach || product == cockroachSQL {
+		url := fmt.Sprintf(cockroachURLIntel, product, version)
 		sha256, err := sha256FromURL(url)
 		if err != nil {
 			return "", fmt.Errorf("failed to calculate SHA256: %w", err)
 		}
 		data.IntelURL = url
 		data.IntelSHA256 = sha256
-		urlARM := fmt.Sprintf(cockroachURLARM, version)
+		urlARM := fmt.Sprintf(cockroachURLARM, product, version)
 		sha256ARM, err := sha256FromURL(urlARM)
 		if err != nil {
 			return "", fmt.Errorf("failed to calculate SHA256: %w", err)
