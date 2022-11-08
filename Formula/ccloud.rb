@@ -4,9 +4,9 @@
 class Ccloud < Formula
   desc "CockroachDB Cloud CLI"
   homepage "https://www.cockroachlabs.com"
-  url "https://binaries.cockroachdb.com/ccloud/ccloud_darwin-amd64_0.2.2.tar.gz"
-  version "0.2.2"
-  sha256 "043b4d9a719d0bd09ccd51cf4c539655dc4b31380bd6396f259130eb9862ace4"
+  url "https://binaries.cockroachdb.com/ccloud/ccloud_darwin-amd64_0.2.4.tar.gz"
+  version "0.2.4"
+  sha256 "53d3115c097fc38d7153fefc84298abe0c64e4247a5b7e175be8aae376034719"
 
   def install
     bin.install "ccloud"
@@ -14,7 +14,7 @@ class Ccloud < Formula
 
   test do
     output = shell_output("#{bin}/ccloud version", 0)
-    assert_match "ccloud 0.2.2", output
+    assert_match "ccloud 0.2.4", output
   end
 end
 
