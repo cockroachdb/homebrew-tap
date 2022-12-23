@@ -4,35 +4,37 @@
 class Cockroach < Formula
   desc "Distributed SQL database"
   homepage "https://www.cockroachlabs.com"
-  version "22.2.1"
+  version "22.2.0"
   on_macos do
     on_intel do
-      url "https://binaries.cockroachdb.com/cockroach-v22.2.1.darwin-10.9-amd64.tgz"
-      sha256 "d0645dc88fc91185a197f61e8f6962e2932aef0c1faed280624ac3adcc0df978"
+      url "https://binaries.cockroachdb.com/cockroach-v22.2.0.darwin-10.9-amd64.tgz"
+      sha256 "a31847a198248dc35195a47e47477a66904efab36e71145003ffacf9fe063ff9"
     end
     on_arm do
-      url "https://binaries.cockroachdb.com/cockroach-v22.2.1.darwin-11.0-aarch64.tgz"
-      sha256 "a2ad4c00dbdad68036009bb2eb82c29c3bc2c06044a9713c5fd16ff5167757ef"
+      url "https://binaries.cockroachdb.com/cockroach-v22.2.0.darwin-11.0-aarch64.tgz"
+      sha256 "7c03689bbdc60f431f13b78c1b56d007e27252d9064191c4ed52e2e7b8791177"
     end
   end
 
   def install
     bin.install "cockroach"
-    lib.mkpath
-    mkdir "#{lib}/cockroach"
-    lib.install "lib/libgeos.dylib" => "cockroach/libgeos.dylib"
-    lib.install "lib/libgeos_c.dylib" => "cockroach/libgeos_c.dylib"
+    on_intel do
+      lib.mkpath
+      mkdir "#{lib}/cockroach"
+      lib.install "lib/libgeos.dylib" => "cockroach/libgeos.dylib"
+      lib.install "lib/libgeos_c.dylib" => "cockroach/libgeos_c.dylib"
 
-    # Brew sets rpaths appropriately, but only if the rpaths are set
-    # to not include "@rpath". As such, use the #{lib} location for the
-    # rpaths.
-    system "install_name_tool", "-id",
-      "#{lib}/cockroach/libgeos.dylib", "#{lib}/cockroach/libgeos.dylib"
-    system "install_name_tool", "-id",
-      "#{lib}/cockroach/libgeos_c.1.dylib", "#{lib}/cockroach/libgeos_c.dylib"
-    system "install_name_tool", "-change",
-      "@rpath/libgeos.3.8.1.dylib", "#{lib}/cockroach/libgeos.dylib",
-      "#{lib}/cockroach/libgeos_c.dylib"
+      # Brew sets rpaths appropriately, but only if the rpaths are set
+      # to not include "@rpath". As such, use the #{lib} location for the
+      # rpaths.
+      system "install_name_tool", "-id",
+             "#{lib}/cockroach/libgeos.dylib", "#{lib}/cockroach/libgeos.dylib"
+      system "install_name_tool", "-id",
+             "#{lib}/cockroach/libgeos_c.1.dylib", "#{lib}/cockroach/libgeos_c.dylib"
+      system "install_name_tool", "-change",
+             "@rpath/libgeos.3.8.1.dylib", "#{lib}/cockroach/libgeos.dylib",
+             "#{lib}/cockroach/libgeos_c.dylib"
+    end
 
     system "#{bin}/cockroach", "gen", "man", "--path=#{man1}"
 
