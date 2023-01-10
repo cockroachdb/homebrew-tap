@@ -17,7 +17,7 @@ const (
 	cockroachSQL      = "cockroach-sql"
 	ccloud            = "ccloud"
 	cockroachURLIntel = "https://binaries.cockroachdb.com/%s-v%s.darwin-10.9-amd64.tgz"
-	cockroachURLARM   = "https://binaries.cockroachdb.com/%s-v%s.darwin-11.0-aarch64.tgz"
+	cockroachURLARM   = "https://binaries.cockroachdb.com/%s-v%s.darwin-11.0-arm64.tgz"
 	ccloudURL         = "https://binaries.cockroachdb.com/ccloud/ccloud_darwin-amd64_%s.tar.gz"
 )
 
