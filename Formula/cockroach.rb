@@ -59,7 +59,7 @@ class Cockroach < Formula
   EOS
   end
 
-  plist_options :manual => "cockroach start-single-node --insecure --http-port=26256 --host=localhost"
+  plist_options :manual => "cockroach start-single-node --insecure --http-port=26256 --host=localhost --store=type=mem,size=8GB"
 
   def plist; <<~EOS
     <?xml version="1.0" encoding="UTF-8"?>
@@ -72,11 +72,11 @@ class Cockroach < Formula
       <array>
         <string>#{opt_bin}/cockroach</string>
         <string>start-single-node</string>
-        <string>--store=#{var}/cockroach/</string>
         <string>--spatial-libs=#{lib}/cockroach</string>
         <string>--http-port=26256</string>
         <string>--insecure</string>
         <string>--host=localhost</string>
+        <string>--store=type=mem,size=8GB</string>
       </array>
       <key>WorkingDirectory</key>
       <string>#{var}</string>

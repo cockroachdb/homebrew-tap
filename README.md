@@ -1,25 +1,43 @@
-# CockroachDB Homebrew Tap
+# Materialize's CockroachDB Homebrew Tap
 
-This is the official source for installing CockroachDB and the CockroachDB Cloud CLI with Homebrew.
+This is a Homebrew tap for CockroachDB, for use when developing [Materialize],
+the streaming data warehouse.
 
-## Installing
+Unless you are a Materialize developer, you probably want the
+[official CockroachDB Homebrew tap][official-tap] instead.
+
+## Usage
 
 ```shell
-$ brew install cockroachdb/tap/cockroach
-$ brew install cockroachdb/tap/ccloud
+$ brew uninstall cockroachdb/tap/cockroach
+$ brew untap cockroachdb/tap
+$ brew uninstall cockroachdb/cockroach/cockroach
+$ brew untap cockroachdb/cockroach
+$ brew install materializeinc/cockroach/cockroach
+$ brew services start cockroach
 ```
 
-Alternately, you can configure the tap and install the package separately:
+## Details
 
-``` shell
-$ brew tap cockroachdb/tap
-$ brew install cockroach
-$ brew install ccloud
+This tap is equivalent to the upstream tap, except that the CockroachDB
+cluster started by `brew services` is configured to use an in-memory store.
+For reasons we have not tracked down in full, CockroachDB is much slower
+when run on macOS, and Materialize's usage of CockroachDB magnifies the
+effect. See [MaterializeInc/materialize#16963] for some discussion. The leading
+theory is slow filesystem operations on macOS.
+
+## Contributor instructions
+
+To update to the latest CockroachDB version:
+
+```bash
+git remote add upstream https://github.com/cockroachdb/homebrew-tap.git
+git fetch upstream
+git merge upstream/master
+# Resolve any conflicts.
+git push origin
 ```
 
-See our complete [installation instructions] for alternative installation
-methods, including support for Linux and Windows.
-
-[CockroachDB]: https://cockroachlabs.com
-[Homebrew]: https://brew.sh
-[installation instructions]: https://www.cockroachlabs.com/docs/install-cockroachdb.html
+[Materialize]: https://github.com/MaterializeInc/materialize
+[official-tap]: https://github.com/cockroachdb/homebrew-tap
+[MaterializeInc/materialize#16963]: https://github.com/MaterializeInc/materialize/issues/16963#issuecomment-1385500542
