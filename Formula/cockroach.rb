@@ -60,9 +60,21 @@ class Cockroach < Formula
   end
 
   service do
-    run [bin/"cockroach", "start-single-node", "--insecure", "--http-port=26256", "--host=localhost"]
-    keep_alive true
+    args = [
+      "start-single-node",
+      "--store=#{var}/cockroach",
+      "--http-port=26256",
+      "--insecure",
+      "--host=localhost",
+     ]
+    if !(OS.mac? && Hardware::CPU.arm?)
+      args << "--spatial-libs=#{opt_bin}/../lib/cockroach"
+    end
+    run [opt_bin/"cockroach"] + args
     working_dir var
+    keep_alive true
+    log_path var/"log/cockroach.log"
+    error_log_path var/"log/cockroach.err"
   end
   
   test do
@@ -109,4 +121,3 @@ class Cockroach < Formula
     end
   end
 end
-
