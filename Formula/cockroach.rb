@@ -59,34 +59,22 @@ class Cockroach < Formula
   EOS
   end
 
-  plist_options :manual => "cockroach start-single-node --insecure --http-port=26256 --host=localhost"
-
-  def plist; <<~EOS
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-    <dict>
-      <key>Label</key>
-      <string>#{plist_name}</string>
-      <key>ProgramArguments</key>
-      <array>
-        <string>#{opt_bin}/cockroach</string>
-        <string>start-single-node</string>
-        <string>--store=#{var}/cockroach/</string>
-        <string>--spatial-libs=#{lib}/cockroach</string>
-        <string>--http-port=26256</string>
-        <string>--insecure</string>
-        <string>--host=localhost</string>
-      </array>
-      <key>WorkingDirectory</key>
-      <string>#{var}</string>
-      <key>RunAtLoad</key>
-      <true/>
-      <key>KeepAlive</key>
-      <true/>
-    </dict>
-    </plist>
-  EOS
+  service do
+    args = [
+      "start-single-node",
+      "--store=#{var}/cockroach",
+      "--http-port=26256",
+      "--insecure",
+      "--host=localhost",
+     ]
+    if !(OS.mac? && Hardware::CPU.arm?)
+      args << "--spatial-libs=#{opt_bin}/../lib/cockroach"
+    end
+    run [opt_bin/"cockroach"] + args
+    working_dir var
+    keep_alive true
+    log_path var/"log/cockroach.log"
+    error_log_path var/"log/cockroach.err"
   end
 
   test do
@@ -133,4 +121,3 @@ class Cockroach < Formula
     end
   end
 end
-
