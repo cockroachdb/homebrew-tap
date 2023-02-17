@@ -76,7 +76,7 @@ class Cockroach < Formula
     log_path var/"log/cockroach.log"
     error_log_path var/"log/cockroach.err"
   end
-  
+
   test do
     begin
       # Redirect stdout and stderr to a file, or else  `brew test --verbose`
