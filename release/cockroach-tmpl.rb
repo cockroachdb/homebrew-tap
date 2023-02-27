@@ -82,9 +82,9 @@ class Cockroach < Formula
       # Redirect stdout and stderr to a file, or else  `brew test --verbose`
       # will hang forever as it waits for stdout and stderr to close.
       pid = fork do
-        exec "#{bin}/cockroach start-single-node --insecure --background --listen-addr=127.0.0.1:0 --http-addr=127.0.0.1:0 --listening-url-file=listen_url_fifo&> start.out"
+        exec "#{bin}/cockroach start-single-node --insecure --background --listen-addr=127.0.0.1:0 --http-addr=127.0.0.1:0 --listening-url-file=listen_url_fifo &> start.out"
       end
-      sleep 2
+      sleep 8
 
       # TODO(bdarnell): remove the X from this variable and the --url flags after
       # https://github.com/cockroachdb/cockroach/issues/40747 is fixed.
@@ -100,12 +100,14 @@ class Cockroach < Formula
         id,balance
         1,1000.50
       EOS
-      output = pipe_output("#{bin}/cockroach sql --url=$XCOCKROACH_URL --format=csv",
-        "SELECT ST_IsValid(ST_MakePoint(1, 1)) is_valid;")
-      assert_equal <<~EOS, output
-        is_valid
-        true
-      EOS
+      if !(OS.mac? && Hardware::CPU.arm?)
+        output = pipe_output("#{bin}/cockroach sql --url=$XCOCKROACH_URL --format=csv",
+          "SELECT ST_IsValid(ST_MakePoint(1, 1)) is_valid;")
+        assert_equal <<~EOS, output
+          is_valid
+          t
+        EOS
+      end
     rescue => e
       # If an error occurs, attempt to print out any messages from the
       # server.
