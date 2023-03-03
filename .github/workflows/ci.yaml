@@ -1,3 +1,5 @@
+name: CI
+
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
@@ -10,7 +12,7 @@ on:
 
 jobs:
   cockroach-test:
-    name: Cockroach formula tests
+    name: cockroach formula tests
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v3
@@ -19,7 +21,7 @@ jobs:
     - name: test cockroach formula
       run: brew test ./Formula/cockroach.rb
   cockroach-sql-test:
-    name: Cockroach-sql formula tests
+    name: cockroach-sql formula tests
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v3
@@ -27,3 +29,12 @@ jobs:
       run: brew install ./Formula/cockroach-sql.rb
     - name: test cockroach formula
       run: brew test ./Formula/cockroach-sql.rb
+  ccloud-test:
+    name: ccloud formula tests
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install ccloud formula
+      run: brew install ./Formula/ccloud.rb
+    - name: test ccloud formula
+      run: brew test ./Formula/ccloud.rb
