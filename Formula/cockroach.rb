@@ -4,15 +4,15 @@
 class Cockroach < Formula
   desc "Distributed SQL database"
   homepage "https://www.cockroachlabs.com"
-  version "22.2.5"
+  version "22.2.6"
   on_macos do
     on_intel do
-      url "https://binaries.cockroachdb.com/cockroach-v22.2.5.darwin-10.9-amd64.tgz"
-      sha256 "d9cc314534c46c065f0b92e5b0cf8b0e9c8a1fa5f2dcd2dae0b931e7fa97ff8c"
+      url "https://binaries.cockroachdb.com/cockroach-v22.2.6.darwin-10.9-amd64.tgz"
+      sha256 "a76ebf0e586613f21b38349087c0c139758f00176372096f9ebfc2b69068f0d8"
     end
     on_arm do
-      url "https://binaries.cockroachdb.com/cockroach-v22.2.5.darwin-11.0-arm64.tgz"
-      sha256 "c008b6ee57eaf7b8ef1f1df277e1a3cbcfb0a9580eed3f840a9edd486fa387d0"
+      url "https://binaries.cockroachdb.com/cockroach-v22.2.6.darwin-11.0-arm64.tgz"
+      sha256 "b944d2db942bf26002bb21d00a2640423fddbc3efba12160af1decea83a25e2b"
     end
   end
 
@@ -100,7 +100,6 @@ class Cockroach < Formula
         id,balance
         1,1000.50
       EOS
-
       if !(OS.mac? && Hardware::CPU.arm?)
         output = pipe_output("#{bin}/cockroach sql --url=$XCOCKROACH_URL --format=csv",
           "SELECT ST_IsValid(ST_MakePoint(1, 1)) is_valid;")
@@ -124,3 +123,4 @@ class Cockroach < Formula
     end
   end
 end
+
