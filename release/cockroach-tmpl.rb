@@ -84,7 +84,7 @@ class Cockroach < Formula
       pid = fork do
         exec "#{bin}/cockroach start-single-node --insecure --background --listen-addr=127.0.0.1:0 --http-addr=127.0.0.1:0 --listening-url-file=listen_url_fifo &> start.out"
       end
-      sleep 8
+      sleep 20
 
       # TODO(bdarnell): remove the X from this variable and the --url flags after
       # https://github.com/cockroachdb/cockroach/issues/40747 is fixed.
