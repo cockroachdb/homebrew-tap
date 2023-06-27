@@ -4,15 +4,15 @@
 class Cockroach < Formula
   desc "Distributed SQL database"
   homepage "https://www.cockroachlabs.com"
-  version "22.2.3"
+  version "23.1.4"
   on_macos do
     on_intel do
-      url "https://binaries.cockroachdb.com/cockroach-v22.2.3.darwin-10.9-amd64.tgz"
-      sha256 "6df8416f1c9d6638d55d23e541f17d1bb38c03415313a43e1bb50ceb058996f1"
+      url "https://binaries.cockroachdb.com/cockroach-v23.1.4.darwin-10.9-amd64.tgz"
+      sha256 "019452db12dbef985f16fa958c44d679aa81c7e7826aa7e03cbfbb76c95c8844"
     end
     on_arm do
-      url "https://binaries.cockroachdb.com/cockroach-v22.2.3.darwin-11.0-arm64.tgz"
-      sha256 "66ef3926143856f6e53525c932e635c84d803814ebbfdba222bc2d7afaa3d910"
+      url "https://binaries.cockroachdb.com/cockroach-v23.1.4.darwin-11.0-arm64.tgz"
+      sha256 "d0a136d159fba61aa7b90ba37ad757b3f016996302f6c8d55b2cd3e3aa60f481"
     end
   end
 
@@ -59,34 +59,22 @@ class Cockroach < Formula
   EOS
   end
 
-  plist_options :manual => "cockroach start-single-node --insecure --http-port=26256 --host=localhost --store=type=mem,size=8GB"
-
-  def plist; <<~EOS
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-    <dict>
-      <key>Label</key>
-      <string>#{plist_name}</string>
-      <key>ProgramArguments</key>
-      <array>
-        <string>#{opt_bin}/cockroach</string>
-        <string>start-single-node</string>
-        <string>--spatial-libs=#{lib}/cockroach</string>
-        <string>--http-port=26256</string>
-        <string>--insecure</string>
-        <string>--host=localhost</string>
-        <string>--store=type=mem,size=8GB</string>
-      </array>
-      <key>WorkingDirectory</key>
-      <string>#{var}</string>
-      <key>RunAtLoad</key>
-      <true/>
-      <key>KeepAlive</key>
-      <true/>
-    </dict>
-    </plist>
-  EOS
+  service do
+    args = [
+      "start-single-node",
+      "--store=type=mem,size=8GB",
+      "--http-port=26256",
+      "--insecure",
+      "--host=localhost",
+     ]
+    if !(OS.mac? && Hardware::CPU.arm?)
+      args << "--spatial-libs=#{opt_bin}/../lib/cockroach"
+    end
+    run [opt_bin/"cockroach"] + args
+    working_dir var
+    keep_alive true
+    log_path var/"log/cockroach.log"
+    error_log_path var/"log/cockroach.err"
   end
 
   test do
@@ -94,9 +82,9 @@ class Cockroach < Formula
       # Redirect stdout and stderr to a file, or else  `brew test --verbose`
       # will hang forever as it waits for stdout and stderr to close.
       pid = fork do
-        exec "#{bin}/cockroach start-single-node --insecure --background --listen-addr=127.0.0.1:0 --http-addr=127.0.0.1:0 --listening-url-file=listen_url_fifo&> start.out"
+        exec "#{bin}/cockroach start-single-node --insecure --background --listen-addr=127.0.0.1:0 --http-addr=127.0.0.1:0 --listening-url-file=listen_url_fifo &> start.out"
       end
-      sleep 2
+      sleep 20
 
       # TODO(bdarnell): remove the X from this variable and the --url flags after
       # https://github.com/cockroachdb/cockroach/issues/40747 is fixed.
@@ -112,12 +100,14 @@ class Cockroach < Formula
         id,balance
         1,1000.50
       EOS
-      output = pipe_output("#{bin}/cockroach sql --url=$XCOCKROACH_URL --format=csv",
-        "SELECT ST_IsValid(ST_MakePoint(1, 1)) is_valid;")
-      assert_equal <<~EOS, output
-        is_valid
-        true
-      EOS
+      if !(OS.mac? && Hardware::CPU.arm?)
+        output = pipe_output("#{bin}/cockroach sql --url=$XCOCKROACH_URL --format=csv",
+          "SELECT ST_IsValid(ST_MakePoint(1, 1)) is_valid;")
+        assert_equal <<~EOS, output
+          is_valid
+          t
+        EOS
+      end
     rescue => e
       # If an error occurs, attempt to print out any messages from the
       # server.

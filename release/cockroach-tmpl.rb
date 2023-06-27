@@ -59,34 +59,22 @@ class Cockroach < Formula
   EOS
   end
 
-  plist_options :manual => "cockroach start-single-node --insecure --http-port=26256 --host=localhost"
-
-  def plist; <<~EOS
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-    <dict>
-      <key>Label</key>
-      <string>#{plist_name}</string>
-      <key>ProgramArguments</key>
-      <array>
-        <string>#{opt_bin}/cockroach</string>
-        <string>start-single-node</string>
-        <string>--store=#{var}/cockroach/</string>
-        <string>--spatial-libs=#{lib}/cockroach</string>
-        <string>--http-port=26256</string>
-        <string>--insecure</string>
-        <string>--host=localhost</string>
-      </array>
-      <key>WorkingDirectory</key>
-      <string>#{var}</string>
-      <key>RunAtLoad</key>
-      <true/>
-      <key>KeepAlive</key>
-      <true/>
-    </dict>
-    </plist>
-  EOS
+  service do
+    args = [
+      "start-single-node",
+      "--store=#{var}/cockroach",
+      "--http-port=26256",
+      "--insecure",
+      "--host=localhost",
+     ]
+    if !(OS.mac? && Hardware::CPU.arm?)
+      args << "--spatial-libs=#{opt_bin}/../lib/cockroach"
+    end
+    run [opt_bin/"cockroach"] + args
+    working_dir var
+    keep_alive true
+    log_path var/"log/cockroach.log"
+    error_log_path var/"log/cockroach.err"
   end
 
   test do
@@ -94,9 +82,9 @@ class Cockroach < Formula
       # Redirect stdout and stderr to a file, or else  `brew test --verbose`
       # will hang forever as it waits for stdout and stderr to close.
       pid = fork do
-        exec "#{bin}/cockroach start-single-node --insecure --background --listen-addr=127.0.0.1:0 --http-addr=127.0.0.1:0 --listening-url-file=listen_url_fifo&> start.out"
+        exec "#{bin}/cockroach start-single-node --insecure --background --listen-addr=127.0.0.1:0 --http-addr=127.0.0.1:0 --listening-url-file=listen_url_fifo &> start.out"
       end
-      sleep 2
+      sleep 20
 
       # TODO(bdarnell): remove the X from this variable and the --url flags after
       # https://github.com/cockroachdb/cockroach/issues/40747 is fixed.
@@ -112,12 +100,14 @@ class Cockroach < Formula
         id,balance
         1,1000.50
       EOS
-      output = pipe_output("#{bin}/cockroach sql --url=$XCOCKROACH_URL --format=csv",
-        "SELECT ST_IsValid(ST_MakePoint(1, 1)) is_valid;")
-      assert_equal <<~EOS, output
-        is_valid
-        true
-      EOS
+      if !(OS.mac? && Hardware::CPU.arm?)
+        output = pipe_output("#{bin}/cockroach sql --url=$XCOCKROACH_URL --format=csv",
+          "SELECT ST_IsValid(ST_MakePoint(1, 1)) is_valid;")
+        assert_equal <<~EOS, output
+          is_valid
+          t
+        EOS
+      end
     rescue => e
       # If an error occurs, attempt to print out any messages from the
       # server.

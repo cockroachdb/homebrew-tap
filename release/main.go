@@ -18,7 +18,8 @@ const (
 	ccloud            = "ccloud"
 	cockroachURLIntel = "https://binaries.cockroachdb.com/%s-v%s.darwin-10.9-amd64.tgz"
 	cockroachURLARM   = "https://binaries.cockroachdb.com/%s-v%s.darwin-11.0-arm64.tgz"
-	ccloudURL         = "https://binaries.cockroachdb.com/ccloud/ccloud_darwin-amd64_%s.tar.gz"
+	ccloudURLIntel    = "https://binaries.cockroachdb.com/ccloud/ccloud_darwin-amd64_%s.tar.gz"
+	ccloudURLARM      = "https://binaries.cockroachdb.com/ccloud/ccloud_darwin-arm64_%s.tar.gz"
 )
 
 type templateArgs struct {
@@ -86,13 +87,21 @@ func processTemplate(product, version string, templateFile string) (string, erro
 		data.ARMURL = urlARM
 		data.ARMSHA256 = sha256ARM
 	} else if product == ccloud {
-		url := fmt.Sprintf(ccloudURL, version)
+		url := fmt.Sprintf(ccloudURLIntel, version)
 		sha256, err := sha256FromURL(url)
 		if err != nil {
 			return "", fmt.Errorf("failed to calculate SHA256: %w", err)
 		}
 		data.IntelURL = url
 		data.IntelSHA256 = sha256
+
+		urlARM := fmt.Sprintf(ccloudURLARM, version)
+		sha256ARM, err := sha256FromURL(urlARM)
+		if err != nil {
+			return "", fmt.Errorf("failed to calculate SHA256: %w", err)
+		}
+		data.ARMURL = urlARM
+		data.ARMSHA256 = sha256ARM
 	}
 	var buf bytes.Buffer
 	err = t.Execute(&buf, data)

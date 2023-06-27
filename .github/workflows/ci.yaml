@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  cockroach-test:
+    name: cockroach formula tests
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install cockroach formula
+      run: brew install ./Formula/cockroach.rb
+    - name: test cockroach formula
+      run: brew test ./Formula/cockroach.rb
+  cockroach-sql-test:
+    name: cockroach-sql formula tests
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install cockroach-sql formula
+      run: brew install ./Formula/cockroach-sql.rb
+    - name: test cockroach formula
+      run: brew test ./Formula/cockroach-sql.rb
+  ccloud-test:
+    name: ccloud formula tests
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install ccloud formula
+      run: brew install ./Formula/ccloud.rb
+    - name: test ccloud formula
+      run: brew test ./Formula/ccloud.rb
