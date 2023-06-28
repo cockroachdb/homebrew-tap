@@ -10,6 +10,8 @@ Unless you are a Materialize developer, you probably want the
 
 ```shell
 $ brew uninstall cockroachdb/tap/cockroach
+$ brew uninstall cockroachdb/tap/cockroach-sql
+$ brew uninstall cockroachdb/tap/ccloud
 $ brew untap cockroachdb/tap
 $ brew uninstall cockroachdb/cockroach/cockroach
 $ brew untap cockroachdb/cockroach
