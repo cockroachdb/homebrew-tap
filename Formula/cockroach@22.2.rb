@@ -1,18 +1,18 @@
 # Auto-generated file, DO NOT EDIT
 # Source: release/cockroach-tmpl.rb
 
-class Cockroach{{ .ClassSuffix }} < Formula
+class CockroachAT222 < Formula
   desc "Distributed SQL database"
   homepage "https://www.cockroachlabs.com"
-  version "{{ .Version }}"
+  version "22.2.11"
   on_macos do
     on_intel do
-      url "{{ .IntelURL }}"
-      sha256 "{{ .IntelSHA256 }}"
+      url "https://binaries.cockroachdb.com/cockroach-v22.2.11.darwin-10.9-amd64.tgz"
+      sha256 "37ae1d5c39e8767dc578a8b64901dad027404f21e32d1ff9532b4c493806e6fe"
     end
     on_arm do
-      url "{{ .ARMURL }}"
-      sha256 "{{ .ARMSHA256 }}"
+      url "https://binaries.cockroachdb.com/cockroach-v22.2.11.darwin-11.0-arm64.tgz"
+      sha256 "f3608868b229c6fea574032fa1279b20c1bd6ace24e76bbd424ff6d67fba740b"
     end
   end
 
@@ -123,3 +123,4 @@ class Cockroach{{ .ClassSuffix }} < Formula
     end
   end
 end
+

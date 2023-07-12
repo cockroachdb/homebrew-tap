@@ -6,6 +6,7 @@ This is the official source for installing CockroachDB, CockroachDB SQL CLI, and
 
 ```shell
 $ brew install cockroachdb/tap/cockroach
+$ brew install cockroachdb/tap/cockroach@22.2 # for older versions
 $ brew install cockroachdb/tap/cockroach-sql
 $ brew install cockroachdb/tap/ccloud
 ```
