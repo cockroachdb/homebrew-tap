@@ -20,6 +20,15 @@ jobs:
       run: brew install ./Formula/cockroach.rb
     - name: test cockroach formula
       run: brew test ./Formula/cockroach.rb
+  cockroach-222-test:
+    name: cockroach@22.2 formula tests
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install cockroach formula
+        run: brew install ./Formula/cockroach@22.2.rb
+      - name: test cockroach formula
+        run: brew test ./Formula/cockroach@22.2.rb
   cockroach-sql-test:
     name: cockroach-sql formula tests
     runs-on: macos-latest

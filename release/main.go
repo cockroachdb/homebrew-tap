@@ -28,11 +28,12 @@ type templateArgs struct {
 	ARMURL      string
 	IntelSHA256 string
 	ARMSHA256   string
+	ClassSuffix string
 }
 
 func main() {
 	if len(os.Args) != 4 {
-		fmt.Println("Usage: go run main.go <cockroach|cockroach-sql|ccloud> <version> <template file>")
+		fmt.Println("Usage: go run main.go <cockroach[@version]|cockroach-sql|ccloud> <version> <template file>")
 		os.Exit(1)
 	}
 	product := os.Args[1]
@@ -71,15 +72,24 @@ func processTemplate(product, version string, templateFile string) (string, erro
 	}
 	data := templateArgs{Version: version}
 
-	if product == cockroach || product == cockroachSQL {
-		url := fmt.Sprintf(cockroachURLIntel, product, version)
+	if product == cockroach || product == cockroachSQL || strings.HasPrefix(product, cockroach+"@") {
+		productBase := product
+		if strings.HasPrefix(product, cockroach+"@") {
+			split := strings.Split(product, "@")
+			if len(split) != 2 {
+				return "", fmt.Errorf("found %d elements using cockroach@", len(split))
+			}
+			productBase = split[0]
+			data.ClassSuffix = "AT" + strings.ReplaceAll(split[1], ".", "")
+		}
+		url := fmt.Sprintf(cockroachURLIntel, productBase, version)
 		sha256, err := sha256FromURL(url)
 		if err != nil {
 			return "", fmt.Errorf("failed to calculate SHA256: %w", err)
 		}
 		data.IntelURL = url
 		data.IntelSHA256 = sha256
-		urlARM := fmt.Sprintf(cockroachURLARM, product, version)
+		urlARM := fmt.Sprintf(cockroachURLARM, productBase, version)
 		sha256ARM, err := sha256FromURL(urlARM)
 		if err != nil {
 			return "", fmt.Errorf("failed to calculate SHA256: %w", err)
