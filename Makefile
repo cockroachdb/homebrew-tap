@@ -12,5 +12,5 @@ endif
 generate:
 	bazel build //release && \
 	  $$(bazel info bazel-bin)/release/release_/release \
-	  $(PRODUCT) $(VERSION) release/$(PRODUCT)-tmpl.rb > Formula/$(PRODUCT).rb.tmp && \
+	  $(PRODUCT) $(VERSION) release/$(firstword $(subst @, ,$(PRODUCT)))-tmpl.rb > Formula/$(PRODUCT).rb.tmp && \
 	  mv Formula/$(PRODUCT).rb.tmp Formula/$(PRODUCT).rb
