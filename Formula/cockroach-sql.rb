@@ -5,6 +5,10 @@ class CockroachSql < Formula
   desc "Distributed SQL database shell"
   homepage "https://www.cockroachlabs.com"
   version "23.1.11"
+  on_linux do
+    url "https://binaries.cockroachdb.com/cockroach-sql-v23.1.11.linux-amd64.tgz"
+    sha256 "8a42076aa8d4448820eb47d9816d08f110d830b263e7edfab1e57f354e6817bb"
+  end
   on_macos do
     on_intel do
       url "https://binaries.cockroachdb.com/cockroach-sql-v23.1.11.darwin-10.9-amd64.tgz"
