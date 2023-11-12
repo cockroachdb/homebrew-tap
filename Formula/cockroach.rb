@@ -40,6 +40,24 @@ class Cockroach < Formula
         "#{lib}/cockroach/libgeos_c.dylib"
     end
 
+    on_linux do
+      lib.mkpath
+      mkdir "#{lib}/cockroach"
+      lib.install "lib/libgeos.dylib" => "cockroach/libgeos.dylib"
+      lib.install "lib/libgeos_c.dylib" => "cockroach/libgeos_c.dylib"
+
+      # Brew sets rpaths appropriately, but only if the rpaths are set
+      # to not include "@rpath". As such, use the #{lib} location for the
+      # rpaths.
+      system "install_name_tool", "-id",
+        "#{lib}/cockroach/libgeos.dylib", "#{lib}/cockroach/libgeos.dylib"
+      system "install_name_tool", "-id",
+        "#{lib}/cockroach/libgeos_c.1.dylib", "#{lib}/cockroach/libgeos_c.dylib"
+      system "install_name_tool", "-change",
+        "@rpath/libgeos.3.8.1.dylib", "#{lib}/cockroach/libgeos.dylib",
+        "#{lib}/cockroach/libgeos_c.dylib"
+    end
+
     system "#{bin}/cockroach", "gen", "man", "--path=#{man1}"
 
     bash_completion.mkpath
