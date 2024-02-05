@@ -100,7 +100,7 @@ class Cockroach < Formula
         id,balance
         1,1000.50
       EOS
-      if !(OS.mac? && Hardware::CPU.arm?)
+      if OS.mac? && Hardware::CPU.arm?
         output = pipe_output("#{bin}/cockroach sql --url=$XCOCKROACH_URL --format=csv",
           "SELECT ST_IsValid(ST_MakePoint(1, 1)) is_valid;")
         assert_equal <<~EOS, output
