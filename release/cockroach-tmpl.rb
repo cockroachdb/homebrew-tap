@@ -31,9 +31,15 @@ class Cockroach{{ .ClassSuffix }} < Formula
         "#{lib}/cockroach/libgeos.dylib", "#{lib}/cockroach/libgeos.dylib"
       system "install_name_tool", "-id",
         "#{lib}/cockroach/libgeos_c.1.dylib", "#{lib}/cockroach/libgeos_c.dylib"
-      system "install_name_tool", "-change",
-        "@rpath/libgeos.3.8.1.dylib", "#{lib}/cockroach/libgeos.dylib",
-        "#{lib}/cockroach/libgeos_c.dylib"
+      if version < Version::new("23.2.0")
+        system "install_name_tool", "-change",
+          "@rpath/libgeos.3.8.1.dylib", "#{lib}/cockroach/libgeos.dylib",
+          "#{lib}/cockroach/libgeos_c.dylib"
+      else
+        system "install_name_tool", "-change",
+          "@rpath/libgeos.3.11.2.dylib", "#{lib}/cockroach/libgeos.dylib",
+          "#{lib}/cockroach/libgeos_c.dylib"
+      end
     end
 
     system "#{bin}/cockroach", "gen", "man", "--path=#{man1}"
