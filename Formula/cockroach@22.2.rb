@@ -4,15 +4,15 @@
 class CockroachAT222 < Formula
   desc "Distributed SQL database"
   homepage "https://www.cockroachlabs.com"
-  version "22.2.17"
+  version "22.2.19"
   on_macos do
     on_intel do
-      url "https://binaries.cockroachdb.com/cockroach-v22.2.17.darwin-10.9-amd64.tgz"
-      sha256 "18eb00f76949caaeb510f94eed6dc3f1f4dd71922a6e2fe16217c00b25a18384"
+      url "https://binaries.cockroachdb.com/cockroach-v22.2.19.darwin-10.9-amd64.tgz"
+      sha256 "79fb1669678b802ae891ec3e005efa801c0f970fec4eb6af7ac89cdb6b991b42"
     end
     on_arm do
-      url "https://binaries.cockroachdb.com/cockroach-v22.2.17.darwin-11.0-arm64.tgz"
-      sha256 "68cf808aaebf4a656561719e728ab49350ab099d24b45134cb725b291c24abfc"
+      url "https://binaries.cockroachdb.com/cockroach-v22.2.19.darwin-11.0-arm64.tgz"
+      sha256 "d79ed93a0a20bf9f9f9a4ac9906f158d6212871101753cd23ede724deea30b8a"
     end
   end
 
@@ -31,9 +31,15 @@ class CockroachAT222 < Formula
         "#{lib}/cockroach/libgeos.dylib", "#{lib}/cockroach/libgeos.dylib"
       system "install_name_tool", "-id",
         "#{lib}/cockroach/libgeos_c.1.dylib", "#{lib}/cockroach/libgeos_c.dylib"
-      system "install_name_tool", "-change",
-        "@rpath/libgeos.3.8.1.dylib", "#{lib}/cockroach/libgeos.dylib",
-        "#{lib}/cockroach/libgeos_c.dylib"
+      if version < Version::new("23.2.0")
+        system "install_name_tool", "-change",
+          "@rpath/libgeos.3.8.1.dylib", "#{lib}/cockroach/libgeos.dylib",
+          "#{lib}/cockroach/libgeos_c.dylib"
+      else
+        system "install_name_tool", "-change",
+          "@rpath/libgeos.3.11.2.dylib", "#{lib}/cockroach/libgeos.dylib",
+          "#{lib}/cockroach/libgeos_c.dylib"
+      end
     end
 
     system "#{bin}/cockroach", "gen", "man", "--path=#{man1}"
