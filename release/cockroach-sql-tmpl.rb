@@ -18,6 +18,9 @@ class CockroachSql < Formula
 
   def install
     bin.install "cockroach-sql"
+    if version >= Version::new("24.1.0")
+      prefix.install "LICENSE.txt", "THIRD-PARTY-NOTICES.txt"
+    end
   end
 
   test do
