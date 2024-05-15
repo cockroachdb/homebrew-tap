@@ -1,0 +1,46 @@
+name: Automerge version bumps
+
+on:
+  pull_request:
+    branches: [ master ]
+    paths:
+    - "!**"
+    - "Formula/cockroach.rb"
+    - "Formula/cockroach@*.rb"
+    - "cockroach-sql.rb"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  automerge:
+    runs-on: ubuntu-latest
+    # if: ${{ github.actor == 'cockroach-teamcity' }}
+    if: ${{ github.actor == 'rail' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: List changed files
+        id: files
+        uses: jitterbit/get-changed-files@v1
+      - name: Regenerate the patch
+        run: |
+          set -euxo pipefail
+          for changed_file in ${{ steps.files.outputs.all }}; do
+            version="$(grep 'version "' "$changed_file" | cut -d'"' -f2)"
+            git checkout origin/master -- "$changed_file"
+            filename=$(basename $changed_file)
+            make PRODUCT="${filename%.*}" VERSION="$version"
+          done
+      - name: Verify nothing changed
+        run: git diff --exit-code
+      - name: Approve a PR
+        run: gh pr review --approve "${{github.event.pull_request.html_url}}"
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      - name: Enable auto-merge
+        run: gh pr merge --auto --merge "${{github.event.pull_request.html_url}}"
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
