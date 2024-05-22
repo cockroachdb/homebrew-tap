@@ -13,15 +13,19 @@ on:
 jobs:
   tests:
     strategy:
+      fail-fast: false
       matrix:
+        os:
+          - macos-latest # amd64
+          - macos-latest-xlarge # arm64
         product:
           - cockroach
           - cockroach@22.2
           - cockroach@23.1
           - cockroach-sql
           - ccloud
-    name: ${{ matrix.product }} formula tests
-    runs-on: macos-latest
+    name: ${{ matrix.product }} formula tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v4
     - name: Install ${{ matrix.product }} formula
