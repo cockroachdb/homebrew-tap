@@ -11,48 +11,20 @@ on:
   workflow_dispatch:
 
 jobs:
-  cockroach-test:
-    name: cockroach formula tests
+  tests:
+    strategy:
+      matrix:
+        product:
+          - cockroach
+          - cockroach@22.2
+          - cockroach@23.1
+          - cockroach-sql
+          - ccloud
+    name: ${{ matrix.product }} formula tests
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: Install cockroach formula
-      run: brew install ./Formula/cockroach.rb
-    - name: test cockroach formula
-      run: brew test ./Formula/cockroach.rb
-  cockroach-231-test:
-    name: cockroach@23.1 formula tests
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Install cockroach formula
-        run: brew install ./Formula/cockroach@23.1.rb
-      - name: test cockroach formula
-        run: brew test ./Formula/cockroach@23.1.rb
-  cockroach-222-test:
-    name: cockroach@22.2 formula tests
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Install cockroach formula
-        run: brew install ./Formula/cockroach@22.2.rb
-      - name: test cockroach formula
-        run: brew test ./Formula/cockroach@22.2.rb
-  cockroach-sql-test:
-    name: cockroach-sql formula tests
-    runs-on: macos-latest
-    steps:
-    - uses: actions/checkout@v3
-    - name: Install cockroach-sql formula
-      run: brew install ./Formula/cockroach-sql.rb
-    - name: test cockroach formula
-      run: brew test ./Formula/cockroach-sql.rb
-  ccloud-test:
-    name: ccloud formula tests
-    runs-on: macos-latest
-    steps:
-    - uses: actions/checkout@v3
-    - name: Install ccloud formula
-      run: brew install ./Formula/ccloud.rb
-    - name: test ccloud formula
-      run: brew test ./Formula/ccloud.rb
+    - uses: actions/checkout@v4
+    - name: Install ${{ matrix.product }} formula
+      run: brew install ./Formula/${{matrix.product }}.rb
+    - name: test ${{ matrix.product }} formula
+      run: brew test ./Formula/${{ matrix.product }}.rb
