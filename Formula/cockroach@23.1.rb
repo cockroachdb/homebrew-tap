@@ -4,20 +4,23 @@
 class CockroachAT231 < Formula
   desc "Distributed SQL database"
   homepage "https://www.cockroachlabs.com"
-  version "23.1.21"
+  version "23.1.22"
   on_macos do
     on_intel do
-      url "https://binaries.cockroachdb.com/cockroach-v23.1.21.darwin-10.9-amd64.tgz"
-      sha256 "5560e798478f8c2c0e0c91c7979213507a728bbb506335002b9bd9cce58287f1"
+      url "https://binaries.cockroachdb.com/cockroach-v23.1.22.darwin-10.9-amd64.tgz"
+      sha256 "4f98e12f5e8bf847188e407854d40eb52f48622102ff3214b9248e608312ccd7"
     end
     on_arm do
-      url "https://binaries.cockroachdb.com/cockroach-v23.1.21.darwin-11.0-arm64.tgz"
-      sha256 "41ec89b8fc26d71d55441b66b0c76a3b424a6979cec0c174a916bb06848c7d4d"
+      url "https://binaries.cockroachdb.com/cockroach-v23.1.22.darwin-11.0-arm64.tgz"
+      sha256 "b5b4a653a34f622d38e6222d0e89b751820aad5607027d7b13e5aaaaea2cc49b"
     end
   end
 
   def install
     bin.install "cockroach"
+    if version >= Version::new("24.1.0")
+      prefix.install "LICENSE.txt", "THIRD-PARTY-NOTICES.txt"
+    end
     on_intel do
       lib.mkpath
       mkdir "#{lib}/cockroach"
