@@ -18,9 +18,7 @@ class Cockroach{{ .ClassSuffix }} < Formula
 
   def install
     bin.install "cockroach"
-    if version >= Version::new("24.1.0")
-      prefix.install "LICENSE.txt", "THIRD-PARTY-NOTICES.txt"
-    end
+    prefix.install "LICENSE.txt", "THIRD-PARTY-NOTICES.txt"
     on_intel do
       lib.mkpath
       mkdir "#{lib}/cockroach"
