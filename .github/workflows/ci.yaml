@@ -20,8 +20,8 @@ jobs:
           - macos-latest-xlarge # arm64
         product:
           - cockroach
-          - cockroach@22.2
           - cockroach@23.1
+          - cockroach@23.2
           - cockroach-sql
           - ccloud
     name: ${{ matrix.product }} formula tests (${{ matrix.os }})
