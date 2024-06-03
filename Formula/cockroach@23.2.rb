@@ -1,18 +1,18 @@
 # Auto-generated file, DO NOT EDIT
 # Source: release/cockroach-tmpl.rb
 
-class CockroachAT222 < Formula
+class CockroachAT232 < Formula
   desc "Distributed SQL database"
   homepage "https://www.cockroachlabs.com"
-  version "22.2.19"
+  version "23.2.5"
   on_macos do
     on_intel do
-      url "https://binaries.cockroachdb.com/cockroach-v22.2.19.darwin-10.9-amd64.tgz"
-      sha256 "79fb1669678b802ae891ec3e005efa801c0f970fec4eb6af7ac89cdb6b991b42"
+      url "https://binaries.cockroachdb.com/cockroach-v23.2.5.darwin-10.9-amd64.tgz"
+      sha256 "df4126568c3bded296d61e4fba5ee14f0ac3029dff25ba82d55c5580d04f5408"
     end
     on_arm do
-      url "https://binaries.cockroachdb.com/cockroach-v22.2.19.darwin-11.0-arm64.tgz"
-      sha256 "d79ed93a0a20bf9f9f9a4ac9906f158d6212871101753cd23ede724deea30b8a"
+      url "https://binaries.cockroachdb.com/cockroach-v23.2.5.darwin-11.0-arm64.tgz"
+      sha256 "1f213ef13a565bf0e4f5cab0b957fcb34584c4561a46f1af014bd4dc2d8449c1"
     end
   end
 
