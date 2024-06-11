@@ -30,7 +30,7 @@ jobs:
           fetch-depth: 0
       - name: List changed files
         id: files
-        uses: jitterbit/get-changed-files@v1
+        uses: tj-actions/changed-files@v44
       # The next steps tries to reproduce the steps taken to generate the
       # files. We restore the changed files to their original state on the
       # default branch, run the commands to regenerate the change, and verify
@@ -38,7 +38,7 @@ jobs:
       - name: Regenerate the patch
         run: |
           set -euxo pipefail
-          for changed_file in ${{ steps.files.outputs.all }}; do
+          for changed_file in ${{ steps.files.outputs.all_changed_files }}; do
             version="$(grep 'version "' "$changed_file" | cut -d'"' -f2)"
             git checkout origin/master -- "$changed_file"
             git restore --staged "$changed_file"
