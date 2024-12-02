@@ -16,13 +16,15 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - macos-latest # amd64
-          - macos-latest-xlarge # arm64
+          - macos-13 # amd64
+          - macos-latest # arm64
         product:
           - cockroach
           - cockroach@23.1
           - cockroach@23.2
           - cockroach@24.1
+          - cockroach@24.2
+          - cockroach@24.3
           - cockroach-sql
           - ccloud
     name: ${{ matrix.product }} formula tests (${{ matrix.os }})

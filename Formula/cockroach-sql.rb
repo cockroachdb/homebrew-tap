@@ -19,7 +19,7 @@ class CockroachSql < Formula
   def install
     bin.install "cockroach-sql"
     prefix.install "LICENSE" if File.exist?("LICENSE")
-    prefix.install "LICENSE.txt" if File.exist?("LICENSE.txt") 
+    prefix.install "LICENSE.txt" if File.exist?("LICENSE.txt")
     prefix.install "THIRD-PARTY-NOTICES.txt"
   end
 
