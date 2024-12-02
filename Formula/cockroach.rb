@@ -19,7 +19,7 @@ class Cockroach < Formula
   def install
     bin.install "cockroach"
     prefix.install "LICENSE" if File.exist?("LICENSE")
-    prefix.install "LICENSE.txt" if File.exist?("LICENSE.txt") 
+    prefix.install "LICENSE.txt" if File.exist?("LICENSE.txt")
     prefix.install "THIRD-PARTY-NOTICES.txt"
     on_intel do
       lib.mkpath
