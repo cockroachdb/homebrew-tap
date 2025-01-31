@@ -4,15 +4,15 @@
 class CockroachSql < Formula
   desc "Distributed SQL database shell"
   homepage "https://www.cockroachlabs.com"
-  version "24.3.3"
+  version "24.3.4"
   on_macos do
     on_intel do
-      url "https://binaries.cockroachdb.com/cockroach-sql-v24.3.3.darwin-10.9-amd64.tgz"
-      sha256 "10cf40b622d5c9e8c7435953dad2efb00a70372b71d0cb5cefef9bdec0a12430"
+      url "https://binaries.cockroachdb.com/cockroach-sql-v24.3.4.darwin-10.9-amd64.tgz"
+      sha256 "3a7e04ab4549b34e5c75dbf2d8f31f887ae0d8e3defd4a694f2fced36925bbb6"
     end
     on_arm do
-      url "https://binaries.cockroachdb.com/cockroach-sql-v24.3.3.darwin-11.0-arm64.tgz"
-      sha256 "f41ef7f32294f35a96c2ab0c078c861228474b6b57297fab91be0b143d829dd8"
+      url "https://binaries.cockroachdb.com/cockroach-sql-v24.3.4.darwin-11.0-arm64.tgz"
+      sha256 "c417c2c31f85c2267d82f2861029524bc5dbe80e3a7564eda88aaedbf9537ba6"
     end
   end
 
@@ -25,7 +25,7 @@ class CockroachSql < Formula
 
   test do
     output = shell_output("#{bin}/cockroach-sql --version", 0)
-    assert_match "24.3.3", output
+    assert_match "24.3.4", output
   end
 
 end
