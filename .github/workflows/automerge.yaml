@@ -30,7 +30,8 @@ jobs:
           fetch-depth: 0
       - name: List changed files
         id: files
-        uses: tj-actions/changed-files@v44
+        # This is v44.5.7. Hardcoded the commit because the tag was compromised
+        uses: tj-actions/changed-files@71038002e0421311a633d95eb36fe5cb4f0152c6
       # The next steps tries to reproduce the steps taken to generate the
       # files. We restore the changed files to their original state on the
       # default branch, run the commands to regenerate the change, and verify
