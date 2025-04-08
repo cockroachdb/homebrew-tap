@@ -7,12 +7,22 @@ class CockroachSql < Formula
   version "{{ .Version }}"
   on_macos do
     on_intel do
-      url "{{ .IntelURL }}"
-      sha256 "{{ .IntelSHA256 }}"
+      url "{{ .MacIntelURL }}"
+      sha256 "{{ .MacIntelSHA256 }}"
     end
     on_arm do
-      url "{{ .ARMURL }}"
-      sha256 "{{ .ARMSHA256 }}"
+      url "{{ .MacARMURL }}"
+      sha256 "{{ .MacARMSHA256 }}"
+    end
+  end
+  on_linux do
+    on_intel do
+      url "{{ .LinuxIntelURL }}"
+      sha256 "{{ .LinuxIntelSHA256 }}"
+    end
+    on_arm do
+      url "{{ .LinuxARMURL }}"
+      sha256 "{{ .LinuxARMSHA256 }}"
     end
   end
 
