@@ -4,15 +4,15 @@
 class CockroachAT232 < Formula
   desc "Distributed SQL database"
   homepage "https://www.cockroachlabs.com"
-  version "23.2.22"
+  version "23.2.23"
   on_macos do
     on_intel do
-      url "https://binaries.cockroachdb.com/cockroach-v23.2.22.darwin-10.9-amd64.tgz"
-      sha256 "1022bdc47c224cb173f5250de88890af61b2f0a41ddb4bc7d2187b51a5841d5e"
+      url "https://binaries.cockroachdb.com/cockroach-v23.2.23.darwin-10.9-amd64.tgz"
+      sha256 "707035a40d6b4725ea478f080725b328b2c21f1ebda815107099767dcb0547bb"
     end
     on_arm do
-      url "https://binaries.cockroachdb.com/cockroach-v23.2.22.darwin-11.0-arm64.tgz"
-      sha256 "9133e14a736418402adf8604957d6eb3679c6f4994472eff3ee1d62a9426d386"
+      url "https://binaries.cockroachdb.com/cockroach-v23.2.23.darwin-11.0-arm64.tgz"
+      sha256 "9dfe9724abc400ef347f0db6da7df7c04f8ccfdc46b40948364688f5f3b7b5c5"
     end
   end
 
