@@ -13,22 +13,32 @@ import (
 )
 
 const (
-	cockroach         = "cockroach"
-	cockroachSQL      = "cockroach-sql"
-	ccloud            = "ccloud"
-	cockroachURLIntel = "https://binaries.cockroachdb.com/%s-v%s.darwin-10.9-amd64.tgz"
-	cockroachURLARM   = "https://binaries.cockroachdb.com/%s-v%s.darwin-11.0-arm64.tgz"
-	ccloudURLIntel    = "https://binaries.cockroachdb.com/ccloud/ccloud_darwin-amd64_%s.tar.gz"
-	ccloudURLARM      = "https://binaries.cockroachdb.com/ccloud/ccloud_darwin-arm64_%s.tar.gz"
+	cockroach              = "cockroach"
+	cockroachSQL           = "cockroach-sql"
+	ccloud                 = "ccloud"
+	cockroachURLMacIntel   = "https://binaries.cockroachdb.com/%s-v%s.darwin-10.9-amd64.tgz"
+	cockroachURLMacARM     = "https://binaries.cockroachdb.com/%s-v%s.darwin-11.0-arm64.tgz"
+	cockroachURLLinuxIntel = "https://binaries.cockroachdb.com/%s-v%s.linux-amd64.tgz"
+	cockroachURLLinuxARM   = "https://binaries.cockroachdb.com/%s-v%s.linux-arm64.tgz"
+	// NB:
+	// - The ccloud URL is not versioned, so we use the latest version.
+	// - Skipping support for Linux ccloud for now, as we currently support Linux Intel, but not Linux ARM.
+	//   https://www.cockroachlabs.com/docs/cockroachcloud/ccloud-get-started.html?filters=linux
+	ccloudURLMacIntel = "https://binaries.cockroachdb.com/ccloud/ccloud_darwin-amd64_%s.tar.gz"
+	ccloudURLMacARM   = "https://binaries.cockroachdb.com/ccloud/ccloud_darwin-arm64_%s.tar.gz"
 )
 
 type templateArgs struct {
-	Version     string
-	IntelURL    string
-	ARMURL      string
-	IntelSHA256 string
-	ARMSHA256   string
-	ClassSuffix string
+	Version          string
+	MacIntelURL      string
+	MacARMURL        string
+	MacIntelSHA256   string
+	MacARMSHA256     string
+	LinuxIntelURL    string
+	LinuxARMURL      string
+	LinuxIntelSHA256 string
+	LinuxARMSHA256   string
+	ClassSuffix      string
 }
 
 func main() {
@@ -82,36 +92,55 @@ func processTemplate(product, version string, templateFile string) (string, erro
 			productBase = split[0]
 			data.ClassSuffix = "AT" + strings.ReplaceAll(split[1], ".", "")
 		}
-		url := fmt.Sprintf(cockroachURLIntel, productBase, version)
+		// MacIntel
+		url := fmt.Sprintf(cockroachURLMacIntel, productBase, version)
 		sha256, err := sha256FromURL(url)
 		if err != nil {
 			return "", fmt.Errorf("failed to calculate SHA256: %w", err)
 		}
-		data.IntelURL = url
-		data.IntelSHA256 = sha256
-		urlARM := fmt.Sprintf(cockroachURLARM, productBase, version)
+		data.MacIntelURL = url
+		data.MacIntelSHA256 = sha256
+		// MacARM
+		urlARM := fmt.Sprintf(cockroachURLMacARM, productBase, version)
 		sha256ARM, err := sha256FromURL(urlARM)
 		if err != nil {
 			return "", fmt.Errorf("failed to calculate SHA256: %w", err)
 		}
-		data.ARMURL = urlARM
-		data.ARMSHA256 = sha256ARM
-	} else if product == ccloud {
-		url := fmt.Sprintf(ccloudURLIntel, version)
-		sha256, err := sha256FromURL(url)
+		data.MacARMURL = urlARM
+		data.MacARMSHA256 = sha256ARM
+		// LinuxIntel
+		urlLinuxIntel := fmt.Sprintf(cockroachURLLinuxIntel, productBase, version)
+		sha256LinuxIntel, err := sha256FromURL(urlLinuxIntel)
 		if err != nil {
 			return "", fmt.Errorf("failed to calculate SHA256: %w", err)
 		}
-		data.IntelURL = url
-		data.IntelSHA256 = sha256
+		data.LinuxIntelURL = urlLinuxIntel
+		data.LinuxIntelSHA256 = sha256LinuxIntel
+		// LinuxARM
+		urlLinuxARM := fmt.Sprintf(cockroachURLLinuxARM, productBase, version)
+		sha256LinuxARM, err := sha256FromURL(urlLinuxARM)
+		if err != nil {
+			return "", fmt.Errorf("failed to calculate SHA256: %w", err)
+		}
+		data.LinuxARMURL = urlLinuxARM
+		data.LinuxARMSHA256 = sha256LinuxARM
 
-		urlARM := fmt.Sprintf(ccloudURLARM, version)
+	} else if product == ccloud {
+		url := fmt.Sprintf(ccloudURLMacIntel, version)
+		sha256, err := sha256FromURL(url)
+		if err != nil {
+			return "", fmt.Errorf("failed to calculate SHA256: %w", err)
+		}
+		data.MacIntelURL = url
+		data.MacIntelSHA256 = sha256
+
+		urlARM := fmt.Sprintf(ccloudURLMacARM, version)
 		sha256ARM, err := sha256FromURL(urlARM)
 		if err != nil {
 			return "", fmt.Errorf("failed to calculate SHA256: %w", err)
 		}
-		data.ARMURL = urlARM
-		data.ARMSHA256 = sha256ARM
+		data.MacARMURL = urlARM
+		data.MacARMSHA256 = sha256ARM
 	}
 	var buf bytes.Buffer
 	err = t.Execute(&buf, data)
