@@ -5,6 +5,7 @@ class CockroachSql < Formula
   desc "Distributed SQL database shell"
   homepage "https://www.cockroachlabs.com"
   version "25.2.0"
+
   on_macos do
     on_intel do
       url "https://binaries.cockroachdb.com/cockroach-sql-v25.2.0.darwin-10.9-amd64.tgz"
@@ -16,6 +17,13 @@ class CockroachSql < Formula
     end
   end
 
+  on_linux do
+    on_intel do
+      url "https://binaries.cockroachdb.com/cockroach-sql-v25.2.0.linux-amd64.tgz"
+      sha256 "b91520300148cb03f11047ccbbb432b1df3115ab85a499f42c7cf2115753b95d"
+    end
+  end
+
   def install
     bin.install "cockroach-sql"
     prefix.install "LICENSE" if File.exist?("LICENSE")
@@ -24,9 +32,7 @@ class CockroachSql < Formula
   end
 
   test do
-    output = shell_output("#{bin}/cockroach-sql --version", 0)
+    output = shell_output("#{bin}/cockroach-sql --version")
     assert_match "25.2.0", output
   end
-
 end
-
