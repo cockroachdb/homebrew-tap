@@ -5,14 +5,22 @@ class CockroachSql < Formula
   desc "Distributed SQL database shell"
   homepage "https://www.cockroachlabs.com"
   version "{{ .Version }}"
+
   on_macos do
     on_intel do
-      url "{{ .IntelURL }}"
-      sha256 "{{ .IntelSHA256 }}"
+      url "{{ .DarwinAMD64URL }}"
+      sha256 "{{ .DarwinAMD64SHA256 }}"
     end
     on_arm do
-      url "{{ .ARMURL }}"
-      sha256 "{{ .ARMSHA256 }}"
+      url "{{ .DarwinARM64URL }}"
+      sha256 "{{ .DarwinARM64SHA256 }}"
+    end
+  end
+
+  on_linux do
+    on_intel do
+      url "{{ .LinuxAMD64URL }}"
+      sha256 "{{ .LinuxAMD64SHA256 }}"
     end
   end
 
@@ -24,8 +32,7 @@ class CockroachSql < Formula
   end
 
   test do
-    output = shell_output("#{bin}/cockroach-sql --version", 0)
+    output = shell_output("#{bin}/cockroach-sql --version")
     assert_match "{{ .Version }}", output
   end
-
 end
