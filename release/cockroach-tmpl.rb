@@ -5,14 +5,25 @@ class Cockroach{{ .ClassSuffix }} < Formula
   desc "Distributed SQL database"
   homepage "https://www.cockroachlabs.com"
   version "{{ .Version }}"
+  on_linux do
+    depends_on "patchelf" => :install
+  end
+
   on_macos do
     on_intel do
-      url "{{ .IntelURL }}"
-      sha256 "{{ .IntelSHA256 }}"
+      url "{{ .DarwinAMD64URL }}"
+      sha256 "{{ .DarwinAMD64SHA256 }}"
     end
     on_arm do
-      url "{{ .ARMURL }}"
-      sha256 "{{ .ARMSHA256 }}"
+      url "{{ .DarwinARM64URL }}"
+      sha256 "{{ .DarwinARM64SHA256 }}"
+    end
+  end
+
+  on_linux do
+    on_intel do
+      url "{{ .LinuxAMD64URL }}"
+      sha256 "{{ .LinuxAMD64SHA256 }}"
     end
   end
 
@@ -21,27 +32,44 @@ class Cockroach{{ .ClassSuffix }} < Formula
     prefix.install "LICENSE" if File.exist?("LICENSE")
     prefix.install "LICENSE.txt" if File.exist?("LICENSE.txt")
     prefix.install "THIRD-PARTY-NOTICES.txt"
-    on_intel do
+    if OS.mac?
+      if Hardware::CPU.intel?
+        lib.mkpath
+        mkdir "#{lib}/cockroach"
+        lib.install "lib/libgeos.dylib" => "cockroach/libgeos.dylib"
+        lib.install "lib/libgeos_c.dylib" => "cockroach/libgeos_c.dylib"
+
+        # Brew sets rpaths appropriately, but only if the rpaths are set
+        # to not include "@rpath". As such, use the #{lib} location for the
+        # rpaths.
+        system "install_name_tool", "-id",
+          "#{lib}/cockroach/libgeos.dylib", "#{lib}/cockroach/libgeos.dylib"
+        system "install_name_tool", "-id",
+          "#{lib}/cockroach/libgeos_c.1.dylib", "#{lib}/cockroach/libgeos_c.dylib"
+        if version < Version.new("23.2.0")
+          system "install_name_tool", "-change",
+            "@rpath/libgeos.3.8.1.dylib", "#{lib}/cockroach/libgeos.dylib",
+            "#{lib}/cockroach/libgeos_c.dylib"
+        else
+          system "install_name_tool", "-change",
+            "@rpath/libgeos.3.11.2.dylib", "#{lib}/cockroach/libgeos.dylib",
+            "#{lib}/cockroach/libgeos_c.dylib"
+        end
+      end
+    end
+
+    if OS.linux?
       lib.mkpath
       mkdir "#{lib}/cockroach"
-      lib.install "lib/libgeos.dylib" => "cockroach/libgeos.dylib"
-      lib.install "lib/libgeos_c.dylib" => "cockroach/libgeos_c.dylib"
-
-      # Brew sets rpaths appropriately, but only if the rpaths are set
-      # to not include "@rpath". As such, use the #{lib} location for the
-      # rpaths.
-      system "install_name_tool", "-id",
-        "#{lib}/cockroach/libgeos.dylib", "#{lib}/cockroach/libgeos.dylib"
-      system "install_name_tool", "-id",
-        "#{lib}/cockroach/libgeos_c.1.dylib", "#{lib}/cockroach/libgeos_c.dylib"
-      if version < Version::new("23.2.0")
-        system "install_name_tool", "-change",
-          "@rpath/libgeos.3.8.1.dylib", "#{lib}/cockroach/libgeos.dylib",
-          "#{lib}/cockroach/libgeos_c.dylib"
+      lib.install "lib/libgeos.so" => "cockroach/libgeos.so"
+      lib.install "lib/libgeos_c.so" => "cockroach/libgeos_c.so"
+      system "patchelf", "--set-rpath", "#{lib}/cockroach/", "#{lib}/cockroach/libgeos.so"
+      system "patchelf", "--set-rpath", "#{lib}/cockroach/", "#{lib}/cockroach/libgeos_c.so"
+      system "patchelf", "--set-soname", "libgeos.so", "#{lib}/cockroach/libgeos.so"
+      if version < Version.new("23.2.0")
+        system "patchelf", "--replace-needed", "libgeos.so.3.8.1", "libgeos.so", "#{lib}/cockroach/libgeos_c.so"
       else
-        system "install_name_tool", "-change",
-          "@rpath/libgeos.3.11.2.dylib", "#{lib}/cockroach/libgeos.dylib",
-          "#{lib}/cockroach/libgeos_c.dylib"
+        system "patchelf", "--replace-needed", "libgeos.so.3.11.2", "libgeos.so", "#{lib}/cockroach/libgeos_c.so"
       end
     end
 
@@ -54,20 +82,6 @@ class Cockroach{{ .ClassSuffix }} < Formula
     system "#{bin}/cockroach", "gen", "autocomplete", "zsh", "--out=#{zsh_completion}/_cockroach"
   end
 
-  def caveats; <<~EOS
-    For local development only, this formula ships a launchd configuration to
-    start a single-node cluster that stores its data under:
-      #{var}/cockroach/
-    Instead of the default port of 8080, the node serves its admin UI at:
-      #{Formatter.url("http://localhost:26256")}
-
-    Do NOT use this cluster to store data you care about; it runs in insecure
-    mode and may expose data publicly in e.g. a DNS rebinding attack. To run
-    CockroachDB securely, please see:
-      #{Formatter.url("https://www.cockroachlabs.com/docs/stable/secure-a-cluster.html")}
-  EOS
-  end
-
   service do
     args = [
       "start-single-node",
@@ -76,7 +90,7 @@ class Cockroach{{ .ClassSuffix }} < Formula
       "--insecure",
       "--host=localhost",
      ]
-    if !(OS.mac? && Hardware::CPU.arm?)
+    unless OS.mac? && Hardware::CPU.arm?
       args << "--spatial-libs=#{opt_bin}/../lib/cockroach"
     end
     run [opt_bin/"cockroach"] + args
@@ -88,10 +102,21 @@ class Cockroach{{ .ClassSuffix }} < Formula
 
   test do
     begin
+      args = [
+        "start-single-node",
+        "--insecure",
+        "--background",
+        "--listen-addr=127.0.0.1:0",
+        "--http-addr=127.0.0.1:0",
+        "--listening-url-file=listen_url_fifo",
+      ]
+      unless OS.mac? && Hardware::CPU.arm?
+        args << "--spatial-libs=#{opt_bin}/../lib/cockroach"
+      end
       # Redirect stdout and stderr to a file, or else  `brew test --verbose`
       # will hang forever as it waits for stdout and stderr to close.
       pid = fork do
-        exec "#{bin}/cockroach start-single-node --insecure --background --listen-addr=127.0.0.1:0 --http-addr=127.0.0.1:0 --listening-url-file=listen_url_fifo &> start.out"
+        exec "#{bin}/cockroach " + args.join(" ") + " &> start.out"
       end
       sleep 20
 
@@ -109,7 +134,7 @@ class Cockroach{{ .ClassSuffix }} < Formula
         id,balance
         1,1000.50
       EOS
-      if !(OS.mac? && Hardware::CPU.arm?)
+      unless OS.mac? && Hardware::CPU.arm?
         output = pipe_output("#{bin}/cockroach sql --url=$XCOCKROACH_URL --format=csv",
           "SELECT ST_IsValid(ST_MakePoint(1, 1)) is_valid;")
         assert_equal <<~EOS, output
