@@ -8,12 +8,19 @@ class Ccloud < Formula
 
   on_macos do
     on_intel do
-      url "{{ .IntelURL }}"
-      sha256 "{{ .IntelSHA256 }}"
+      url "{{ .DarwinAMD64URL }}"
+      sha256 "{{ .DarwinAMD64SHA256 }}"
     end
     on_arm do
-      url "{{ .ARMURL }}"
-      sha256 "{{ .ARMSHA256 }}"
+      url "{{ .DarwinARM64URL }}"
+      sha256 "{{ .DarwinARM64SHA256 }}"
+    end
+  end
+
+  on_linux do
+    on_intel do
+      url "{{ .LinuxAMD64URL }}"
+      sha256 "{{ .LinuxAMD64SHA256 }}"
     end
   end
 
@@ -22,7 +29,7 @@ class Ccloud < Formula
   end
 
   test do
-    output = shell_output("#{bin}/ccloud version", 0)
+    output = shell_output("#{bin}/ccloud version")
     assert_match "ccloud {{ .Version }}", output
   end
 end
