@@ -17,13 +17,19 @@ class Ccloud < Formula
     end
   end
 
+  on_linux do
+    on_intel do
+      url "https://binaries.cockroachdb.com/ccloud/ccloud_linux-amd64_0.7.14.tar.gz"
+      sha256 "2022e62fcbdaade7d5cb513fb937252c7895c40827d480e59a950fd4c5d7c671"
+    end
+  end
+
   def install
     bin.install "ccloud"
   end
 
   test do
-    output = shell_output("#{bin}/ccloud version", 0)
+    output = shell_output("#{bin}/ccloud version")
     assert_match "ccloud 0.7.14", output
   end
 end
-
