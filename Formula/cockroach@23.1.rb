@@ -5,10 +5,6 @@ class CockroachAT231 < Formula
   desc "Distributed SQL database"
   homepage "https://www.cockroachlabs.com"
   version "23.1.30"
-  on_linux do
-    depends_on "patchelf" => :install
-  end
-
   on_macos do
     on_intel do
       url "https://binaries.cockroachdb.com/cockroach-v23.1.30.darwin-10.9-amd64.tgz"
@@ -19,12 +15,16 @@ class CockroachAT231 < Formula
       sha256 "518a642d2585ec6367fcbe9c91800fcc9e7a201119cb1113c5903924567d3d6e"
     end
   end
-
   on_linux do
+    depends_on "patchelf" => :install
     on_intel do
       url "https://binaries.cockroachdb.com/cockroach-v23.1.30.linux-amd64.tgz"
       sha256 "c33dc03854f1a0f7df8fbeb1368d7dfcecd3c18c9e91eb79987789b1115e1dae"
     end
+  end
+
+  def libgeos_supported?
+    !(OS.mac? && Hardware::CPU.arm?)
   end
 
   def install
@@ -32,29 +32,27 @@ class CockroachAT231 < Formula
     prefix.install "LICENSE" if File.exist?("LICENSE")
     prefix.install "LICENSE.txt" if File.exist?("LICENSE.txt")
     prefix.install "THIRD-PARTY-NOTICES.txt"
-    if OS.mac?
-      if Hardware::CPU.intel?
-        lib.mkpath
-        mkdir "#{lib}/cockroach"
-        lib.install "lib/libgeos.dylib" => "cockroach/libgeos.dylib"
-        lib.install "lib/libgeos_c.dylib" => "cockroach/libgeos_c.dylib"
+    if OS.mac? && libgeos_supported?
+      lib.mkpath
+      mkdir "#{lib}/cockroach"
+      lib.install "lib/libgeos.dylib" => "cockroach/libgeos.dylib"
+      lib.install "lib/libgeos_c.dylib" => "cockroach/libgeos_c.dylib"
 
-        # Brew sets rpaths appropriately, but only if the rpaths are set
-        # to not include "@rpath". As such, use the #{lib} location for the
-        # rpaths.
-        system "install_name_tool", "-id",
-          "#{lib}/cockroach/libgeos.dylib", "#{lib}/cockroach/libgeos.dylib"
-        system "install_name_tool", "-id",
-          "#{lib}/cockroach/libgeos_c.1.dylib", "#{lib}/cockroach/libgeos_c.dylib"
-        if version < Version.new("23.2.0")
-          system "install_name_tool", "-change",
-            "@rpath/libgeos.3.8.1.dylib", "#{lib}/cockroach/libgeos.dylib",
-            "#{lib}/cockroach/libgeos_c.dylib"
-        else
-          system "install_name_tool", "-change",
-            "@rpath/libgeos.3.11.2.dylib", "#{lib}/cockroach/libgeos.dylib",
-            "#{lib}/cockroach/libgeos_c.dylib"
-        end
+      # Brew sets rpaths appropriately, but only if the rpaths are set
+      # to not include "@rpath". As such, use the #{lib} location for the
+      # rpaths.
+      system "install_name_tool", "-id",
+        "#{lib}/cockroach/libgeos.dylib", "#{lib}/cockroach/libgeos.dylib"
+      system "install_name_tool", "-id",
+        "#{lib}/cockroach/libgeos_c.1.dylib", "#{lib}/cockroach/libgeos_c.dylib"
+      if version < Version.new("23.2.0")
+        system "install_name_tool", "-change",
+          "@rpath/libgeos.3.8.1.dylib", "#{lib}/cockroach/libgeos.dylib",
+          "#{lib}/cockroach/libgeos_c.dylib"
+      else
+        system "install_name_tool", "-change",
+          "@rpath/libgeos.3.11.2.dylib", "#{lib}/cockroach/libgeos.dylib",
+          "#{lib}/cockroach/libgeos_c.dylib"
       end
     end
 
@@ -73,13 +71,13 @@ class CockroachAT231 < Formula
       end
     end
 
-    system "#{bin}/cockroach", "gen", "man", "--path=#{man1}"
+    system bin/"cockroach", "gen", "man", "--path=#{man1}"
 
     bash_completion.mkpath
-    system "#{bin}/cockroach", "gen", "autocomplete", "bash", "--out=#{bash_completion}/cockroach"
+    system bin/"cockroach", "gen", "autocomplete", "bash", "--out=#{bash_completion}/cockroach"
 
     zsh_completion.mkpath
-    system "#{bin}/cockroach", "gen", "autocomplete", "zsh", "--out=#{zsh_completion}/_cockroach"
+    system bin/"cockroach", "gen", "autocomplete", "zsh", "--out=#{zsh_completion}/_cockroach"
   end
 
   service do
@@ -89,10 +87,10 @@ class CockroachAT231 < Formula
       "--http-port=26256",
       "--insecure",
       "--host=localhost",
-     ]
-    unless OS.mac? && Hardware::CPU.arm?
-      args << "--spatial-libs=#{opt_bin}/../lib/cockroach"
-    end
+    ]
+    # We cannot use custom function in the service block, so we need to
+    # check the condition here.
+    args << "--spatial-libs=#{opt_bin}/../lib/cockroach" if !(OS.mac? && Hardware::CPU.arm?)
     run [opt_bin/"cockroach"] + args
     working_dir var
     keep_alive true
@@ -110,9 +108,7 @@ class CockroachAT231 < Formula
         "--http-addr=127.0.0.1:0",
         "--listening-url-file=listen_url_fifo",
       ]
-      unless OS.mac? && Hardware::CPU.arm?
-        args << "--spatial-libs=#{opt_bin}/../lib/cockroach"
-      end
+      args << "--spatial-libs=#{opt_bin}/../lib/cockroach" if libgeos_supported?
       # Redirect stdout and stderr to a file, or else  `brew test --verbose`
       # will hang forever as it waits for stdout and stderr to close.
       pid = fork do
@@ -134,7 +130,7 @@ class CockroachAT231 < Formula
         id,balance
         1,1000.50
       EOS
-      unless OS.mac? && Hardware::CPU.arm?
+      if libgeos_supported?
         output = pipe_output("#{bin}/cockroach sql --url=$XCOCKROACH_URL --format=csv",
           "SELECT ST_IsValid(ST_MakePoint(1, 1)) is_valid;")
         assert_equal <<~EOS, output
