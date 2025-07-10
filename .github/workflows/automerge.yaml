@@ -1,0 +1,65 @@
+# This Workflow automatically merges pull requests, submitted by certain users
+# if they pass certain criteria.
+# WARNING: If you change this file, it is mandatory to file a CREQ request to
+# approve the changes.
+name: Automerge version bumps
+
+on:
+  pull_request:
+    branches: [ master ]
+    paths:
+    # Trigger the workflow only for certain files. First we need to exclude all
+    # files, then add the files we care about.
+    - "!**"
+    - "Formula/cockroach.rb"
+    - "Formula/cockroach@*.rb"
+    - "Formula/cockroach-sql.rb"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  automerge:
+    runs-on: ubuntu-latest
+    if: ${{ github.actor == 'cockroach-teamcity' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Fetch all branches so it is possible to checkout the default branch files.
+          fetch-depth: 0
+      - name: List changed files
+        id: files
+        # This is v44.5.7. Hardcoded the commit because the tag was compromised
+        uses: tj-actions/changed-files@71038002e0421311a633d95eb36fe5cb4f0152c6
+      # The next steps tries to reproduce the steps taken to generate the
+      # files. We restore the changed files to their original state on the
+      # default branch, run the commands to regenerate the change, and verify
+      # the result matches the PR contents (git diff does not show any changes).
+      - name: Regenerate the patch
+        run: |
+          set -euxo pipefail
+          for changed_file in ${{ steps.files.outputs.all_changed_files }}; do
+            version="$(grep 'version "' "$changed_file" | cut -d'"' -f2)"
+            git checkout origin/master -- "$changed_file"
+            git restore --staged "$changed_file"
+            master_version="$(grep 'version "' "$changed_file" | cut -d'"' -f2)"
+            # Prevent downgrades
+            latest_version="$(echo -e "$version\n$master_version" | sort --version-sort -r | head -n1)"
+            if [[ $latest_version != $version ]]; then
+              echo "Downgrades are not permitteed in automatic mode, $version < $latest_version"
+              exit 1
+            fi
+            filename=$(basename $changed_file)
+            make PRODUCT="${filename%.*}" VERSION="$version"
+          done
+      - name: Verify nothing changed
+        run: git diff --exit-code
+      - name: Approve a PR
+        run: gh pr review --approve "${{github.event.pull_request.html_url}}"
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      - name: Enable auto-merge
+        run: gh pr merge --auto --merge "${{github.event.pull_request.html_url}}"
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}

@@ -4,16 +4,23 @@
 class Ccloud < Formula
   desc "CockroachDB Cloud CLI"
   homepage "https://www.cockroachlabs.com"
-  version "0.4.9"
+  version "0.7.14"
 
   on_macos do
     on_intel do
-      url "https://binaries.cockroachdb.com/ccloud/ccloud_darwin-amd64_0.4.9.tar.gz"
-      sha256 "68b762bdcc82392356d3c73b12d809e697d0701c54227bd6a8516d80ab86ce2f"
+      url "https://binaries.cockroachdb.com/ccloud/ccloud_darwin-amd64_0.7.14.tar.gz"
+      sha256 "58b3afed0dc1aa892c8c519abb70ace10bf5faac9e82a8b4be93e654f07de692"
     end
     on_arm do
-      url "https://binaries.cockroachdb.com/ccloud/ccloud_darwin-arm64_0.4.9.tar.gz"
-      sha256 "a7be7d58cbc944316234ab5f8f878904b7ea5b765b7785058e9b420088514838"
+      url "https://binaries.cockroachdb.com/ccloud/ccloud_darwin-arm64_0.7.14.tar.gz"
+      sha256 "25c3760d4a21b69a39ab0460654190ee9bb2fe37477985f9a3080fe0171d194a"
+    end
+  end
+
+  on_linux do
+    on_intel do
+      url "https://binaries.cockroachdb.com/ccloud/ccloud_linux-amd64_0.7.14.tar.gz"
+      sha256 "2022e62fcbdaade7d5cb513fb937252c7895c40827d480e59a950fd4c5d7c671"
     end
   end
 
@@ -22,8 +29,7 @@ class Ccloud < Formula
   end
 
   test do
-    output = shell_output("#{bin}/ccloud version", 0)
-    assert_match "ccloud 0.4.9", output
+    output = shell_output("#{bin}/ccloud version")
+    assert_match "ccloud 0.7.14", output
   end
 end
-

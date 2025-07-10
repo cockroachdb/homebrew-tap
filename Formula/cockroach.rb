@@ -4,21 +4,35 @@
 class Cockroach < Formula
   desc "Distributed SQL database"
   homepage "https://www.cockroachlabs.com"
-  version "23.1.4"
+  version "25.2.2"
   on_macos do
     on_intel do
-      url "https://binaries.cockroachdb.com/cockroach-v23.1.4.darwin-10.9-amd64.tgz"
-      sha256 "019452db12dbef985f16fa958c44d679aa81c7e7826aa7e03cbfbb76c95c8844"
+      url "https://binaries.cockroachdb.com/cockroach-v25.2.2.darwin-10.9-amd64.tgz"
+      sha256 "a339440dfa4012756f5c7e1b558b5c6b60deac9f6b2237a136b7b13f04c25696"
     end
     on_arm do
-      url "https://binaries.cockroachdb.com/cockroach-v23.1.4.darwin-11.0-arm64.tgz"
-      sha256 "d0a136d159fba61aa7b90ba37ad757b3f016996302f6c8d55b2cd3e3aa60f481"
+      url "https://binaries.cockroachdb.com/cockroach-v25.2.2.darwin-11.0-arm64.tgz"
+      sha256 "ec20ce6fe930494b1fe6bd10717277d878a8991752a202907faeca7bc5fad924"
     end
+  end
+  on_linux do
+    depends_on "patchelf" => :install
+    on_intel do
+      url "https://binaries.cockroachdb.com/cockroach-v25.2.2.linux-amd64.tgz"
+      sha256 "b0f695dfa6002834fbeeed0be2f5bf0d2b457b0a245724c3104078ed04549644"
+    end
+  end
+
+  def libgeos_supported?
+    !(OS.mac? && Hardware::CPU.arm?)
   end
 
   def install
     bin.install "cockroach"
-    on_intel do
+    prefix.install "LICENSE" if File.exist?("LICENSE")
+    prefix.install "LICENSE.txt" if File.exist?("LICENSE.txt")
+    prefix.install "THIRD-PARTY-NOTICES.txt"
+    if OS.mac? && libgeos_supported?
       lib.mkpath
       mkdir "#{lib}/cockroach"
       lib.install "lib/libgeos.dylib" => "cockroach/libgeos.dylib"
@@ -31,32 +45,39 @@ class Cockroach < Formula
         "#{lib}/cockroach/libgeos.dylib", "#{lib}/cockroach/libgeos.dylib"
       system "install_name_tool", "-id",
         "#{lib}/cockroach/libgeos_c.1.dylib", "#{lib}/cockroach/libgeos_c.dylib"
-      system "install_name_tool", "-change",
-        "@rpath/libgeos.3.8.1.dylib", "#{lib}/cockroach/libgeos.dylib",
-        "#{lib}/cockroach/libgeos_c.dylib"
+      if version < Version.new("23.2.0")
+        system "install_name_tool", "-change",
+          "@rpath/libgeos.3.8.1.dylib", "#{lib}/cockroach/libgeos.dylib",
+          "#{lib}/cockroach/libgeos_c.dylib"
+      else
+        system "install_name_tool", "-change",
+          "@rpath/libgeos.3.11.2.dylib", "#{lib}/cockroach/libgeos.dylib",
+          "#{lib}/cockroach/libgeos_c.dylib"
+      end
     end
 
-    system "#{bin}/cockroach", "gen", "man", "--path=#{man1}"
+    if OS.linux?
+      lib.mkpath
+      mkdir "#{lib}/cockroach"
+      lib.install "lib/libgeos.so" => "cockroach/libgeos.so"
+      lib.install "lib/libgeos_c.so" => "cockroach/libgeos_c.so"
+      system "patchelf", "--set-rpath", "#{lib}/cockroach/", "#{lib}/cockroach/libgeos.so"
+      system "patchelf", "--set-rpath", "#{lib}/cockroach/", "#{lib}/cockroach/libgeos_c.so"
+      system "patchelf", "--set-soname", "libgeos.so", "#{lib}/cockroach/libgeos.so"
+      if version < Version.new("23.2.0")
+        system "patchelf", "--replace-needed", "libgeos.so.3.8.1", "libgeos.so", "#{lib}/cockroach/libgeos_c.so"
+      else
+        system "patchelf", "--replace-needed", "libgeos.so.3.11.2", "libgeos.so", "#{lib}/cockroach/libgeos_c.so"
+      end
+    end
+
+    system bin/"cockroach", "gen", "man", "--path=#{man1}"
 
     bash_completion.mkpath
-    system "#{bin}/cockroach", "gen", "autocomplete", "bash", "--out=#{bash_completion}/cockroach"
+    system bin/"cockroach", "gen", "autocomplete", "bash", "--out=#{bash_completion}/cockroach"
 
     zsh_completion.mkpath
-    system "#{bin}/cockroach", "gen", "autocomplete", "zsh", "--out=#{zsh_completion}/_cockroach"
-  end
-
-  def caveats; <<~EOS
-    For local development only, this formula ships a launchd configuration to
-    start a single-node cluster that stores its data under:
-      #{var}/cockroach/
-    Instead of the default port of 8080, the node serves its admin UI at:
-      #{Formatter.url("http://localhost:26256")}
-
-    Do NOT use this cluster to store data you care about; it runs in insecure
-    mode and may expose data publicly in e.g. a DNS rebinding attack. To run
-    CockroachDB securely, please see:
-      #{Formatter.url("https://www.cockroachlabs.com/docs/stable/secure-a-cluster.html")}
-  EOS
+    system bin/"cockroach", "gen", "autocomplete", "zsh", "--out=#{zsh_completion}/_cockroach"
   end
 
   service do
@@ -66,10 +87,10 @@ class Cockroach < Formula
       "--http-port=26256",
       "--insecure",
       "--host=localhost",
-     ]
-    if !(OS.mac? && Hardware::CPU.arm?)
-      args << "--spatial-libs=#{opt_bin}/../lib/cockroach"
-    end
+    ]
+    # We cannot use custom function in the service block, so we need to
+    # check the condition here.
+    args << "--spatial-libs=#{opt_bin}/../lib/cockroach" if !(OS.mac? && Hardware::CPU.arm?)
     run [opt_bin/"cockroach"] + args
     working_dir var
     keep_alive true
@@ -79,10 +100,19 @@ class Cockroach < Formula
 
   test do
     begin
+      args = [
+        "start-single-node",
+        "--insecure",
+        "--background",
+        "--listen-addr=127.0.0.1:0",
+        "--http-addr=127.0.0.1:0",
+        "--listening-url-file=listen_url_fifo",
+      ]
+      args << "--spatial-libs=#{opt_bin}/../lib/cockroach" if libgeos_supported?
       # Redirect stdout and stderr to a file, or else  `brew test --verbose`
       # will hang forever as it waits for stdout and stderr to close.
       pid = fork do
-        exec "#{bin}/cockroach start-single-node --insecure --background --listen-addr=127.0.0.1:0 --http-addr=127.0.0.1:0 --listening-url-file=listen_url_fifo &> start.out"
+        exec "#{bin}/cockroach " + args.join(" ") + " &> start.out"
       end
       sleep 20
 
@@ -100,7 +130,7 @@ class Cockroach < Formula
         id,balance
         1,1000.50
       EOS
-      if !(OS.mac? && Hardware::CPU.arm?)
+      if libgeos_supported?
         output = pipe_output("#{bin}/cockroach sql --url=$XCOCKROACH_URL --format=csv",
           "SELECT ST_IsValid(ST_MakePoint(1, 1)) is_valid;")
         assert_equal <<~EOS, output
@@ -123,4 +153,3 @@ class Cockroach < Formula
     end
   end
 end
-

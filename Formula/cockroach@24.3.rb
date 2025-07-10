@@ -1,25 +1,25 @@
 # Auto-generated file, DO NOT EDIT
 # Source: release/cockroach-tmpl.rb
 
-class Cockroach{{ .ClassSuffix }} < Formula
+class CockroachAT243 < Formula
   desc "Distributed SQL database"
   homepage "https://www.cockroachlabs.com"
-  version "{{ .Version }}"
+  version "24.3.15"
   on_macos do
     on_intel do
-      url "{{ .DarwinAMD64URL }}"
-      sha256 "{{ .DarwinAMD64SHA256 }}"
+      url "https://binaries.cockroachdb.com/cockroach-v24.3.15.darwin-10.9-amd64.tgz"
+      sha256 "dea804ee4d0db11ef27627014264d01b4e6cc27c4a7b6eb4f88b729226b240f0"
     end
     on_arm do
-      url "{{ .DarwinARM64URL }}"
-      sha256 "{{ .DarwinARM64SHA256 }}"
+      url "https://binaries.cockroachdb.com/cockroach-v24.3.15.darwin-11.0-arm64.tgz"
+      sha256 "e21c4c0cad2fe11e4f2438a3e958da2d7cf0f2affffd1bc0d77948cca564f49d"
     end
   end
   on_linux do
     depends_on "patchelf" => :install
     on_intel do
-      url "{{ .LinuxAMD64URL }}"
-      sha256 "{{ .LinuxAMD64SHA256 }}"
+      url "https://binaries.cockroachdb.com/cockroach-v24.3.15.linux-amd64.tgz"
+      sha256 "d8f3e8b5e7f56011eedfb4964da2ca503ad15546f3f9591a484980039573e502"
     end
   end
 
