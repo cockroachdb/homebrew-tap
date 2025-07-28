@@ -21,11 +21,10 @@ jobs:
           - ubuntu-latest # amd64
         product:
           - cockroach
-          - cockroach@23.1
-          - cockroach@23.2
           - cockroach@24.1
           - cockroach@24.3
           - cockroach@25.1
+          - cockroach@25.2
           - cockroach-sql
           - ccloud
     name: ${{ matrix.product }} formula tests (${{ matrix.os }})
