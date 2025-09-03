@@ -23,8 +23,8 @@ jobs:
           - cockroach
           - cockroach@24.1
           - cockroach@24.3
-          - cockroach@25.1
           - cockroach@25.2
+          - cockroach@25.3
           - cockroach-sql
           - ccloud
     name: ${{ matrix.product }} formula tests (${{ matrix.os }})
@@ -32,6 +32,16 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Install ${{ matrix.product }} formula
-      run: ${{ runner.os == 'Linux' && '/home/linuxbrew/.linuxbrew/bin/brew' || 'brew' }} install ./Formula/${{matrix.product }}.rb
+      run: |
+        # Homebrew 4.6.4 introduced a breaking change that disabled the
+        # possibility of installing formulas/casks from paths. This is a work
+        # around to simulate using an installed tap. Note, that the tap name
+        # "local" in the name, to make sure brew doesn't use the actual tap.
+        set -euxo pipefail
+        brew_cmd="${{ runner.os == 'Linux' && '/home/linuxbrew/.linuxbrew/bin/brew' || 'brew' }}"
+        formula_dir="$($brew_cmd --repository)/Library/Taps/cockroachdb/homebrew-local-tap/Formula"
+        mkdir -p "$formula_dir"
+        cp Formula/${{ matrix.product }}.rb "$formula_dir/"
+        $brew_cmd install cockroachdb/local-tap/${{ matrix.product }}
     - name: test ${{ matrix.product }} formula
-      run: ${{ runner.os == 'Linux' && '/home/linuxbrew/.linuxbrew/bin/brew' || 'brew' }} test ./Formula/${{ matrix.product }}.rb
+      run: ${{ runner.os == 'Linux' && '/home/linuxbrew/.linuxbrew/bin/brew' || 'brew' }} test ${{ matrix.product }}
