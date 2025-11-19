@@ -4,23 +4,23 @@
 class CockroachSql < Formula
   desc "Distributed SQL database shell"
   homepage "https://www.cockroachlabs.com"
-  version "25.3.4"
+  version "25.4.0"
 
   on_macos do
     on_intel do
-      url "https://binaries.cockroachdb.com/cockroach-sql-v25.3.4.darwin-10.9-amd64.tgz"
-      sha256 "39bb4f9a40d7960ee904394b733c75c79cb363f20141873ec1bccbf1b31c2eac"
+      url "https://binaries.cockroachdb.com/cockroach-sql-v25.4.0.darwin-10.9-amd64.tgz"
+      sha256 "a22086b0f26f239af4e9e2b7fe189b433913f6afd22fdef161f6e56ced23448b"
     end
     on_arm do
-      url "https://binaries.cockroachdb.com/cockroach-sql-v25.3.4.darwin-11.0-arm64.tgz"
-      sha256 "44c7032b07bad89ddf97e21fc2ababa39fe85ba107de11c69f6fcb9ddb8638ca"
+      url "https://binaries.cockroachdb.com/cockroach-sql-v25.4.0.darwin-11.0-arm64.tgz"
+      sha256 "c6f83cdaeed14b709f2a57221dca310ddb3788b5caf562056127a304874bc028"
     end
   end
 
   on_linux do
     on_intel do
-      url "https://binaries.cockroachdb.com/cockroach-sql-v25.3.4.linux-amd64.tgz"
-      sha256 "5e09080c722f5f6381554e76535fa09f9c6d9f65a7932e17832c0447b0947ba5"
+      url "https://binaries.cockroachdb.com/cockroach-sql-v25.4.0.linux-amd64.tgz"
+      sha256 "0a95183c7b5a7522ae38a63a69a4bc490e858a6aeb10d6f29dce79afd6c0e1b7"
     end
   end
 
@@ -33,6 +33,6 @@ class CockroachSql < Formula
 
   test do
     output = shell_output("#{bin}/cockroach-sql --version")
-    assert_match "25.3.4", output
+    assert_match "25.4.0", output
   end
 end
