@@ -27,12 +27,42 @@ class CockroachAT243 < Formula
     !(OS.mac? && Hardware::CPU.arm?)
   end
 
+  # Extract the libgeos library name from libgeos_c dependencies
+  def detect_libgeos_name(libgeos_c_path)
+    if OS.mac?
+      # Use otool to inspect the dylib dependencies
+      output = `otool -L "#{libgeos_c_path}"`.lines
+      # Find the line with @rpath/libgeos.*.dylib
+      geos_line = output.find { |line| line.include?("@rpath/libgeos.") && !line.include?("libgeos_c") }
+      if geos_line
+        # Extract just the library name (e.g., "@rpath/libgeos.3.13.1.dylib")
+        geos_line.strip.split[0]
+      else
+        raise "Could not detect libgeos dependency in #{libgeos_c_path}"
+      end
+    else
+      # Use patchelf to inspect the shared library dependencies
+      output = `patchelf --print-needed "#{libgeos_c_path}" 2>&1`
+      # Find the line with libgeos.so* (but not libgeos_c)
+      geos_line = output.lines.find { |line| line.strip.start_with?("libgeos.so") && !line.include?("libgeos_c") }
+      if geos_line
+        # Extract just the library name (e.g., "libgeos.so" or "libgeos.so.3.11.2")
+        geos_line.strip
+      else
+        raise "Could not detect libgeos dependency in #{libgeos_c_path}. Output: #{output}"
+      end
+    end
+  end
+
   def install
     bin.install "cockroach"
     prefix.install "LICENSE" if File.exist?("LICENSE")
     prefix.install "LICENSE.txt" if File.exist?("LICENSE.txt")
     prefix.install "THIRD-PARTY-NOTICES.txt"
     if OS.mac? && libgeos_supported?
+      # Detect the libgeos version dynamically before modifying the library
+      libgeos_name = detect_libgeos_name("lib/libgeos_c.dylib")
+
       lib.mkpath
       mkdir "#{lib}/cockroach"
       lib.install "lib/libgeos.dylib" => "cockroach/libgeos.dylib"
@@ -45,19 +75,9 @@ class CockroachAT243 < Formula
         "#{lib}/cockroach/libgeos.dylib", "#{lib}/cockroach/libgeos.dylib"
       system "install_name_tool", "-id",
         "#{lib}/cockroach/libgeos_c.1.dylib", "#{lib}/cockroach/libgeos_c.dylib"
-      if version < Version.new("23.2.0")
-        system "install_name_tool", "-change",
-          "@rpath/libgeos.3.8.1.dylib", "#{lib}/cockroach/libgeos.dylib",
-          "#{lib}/cockroach/libgeos_c.dylib"
-      elsif version < Version.new("25.4.0")
-        system "install_name_tool", "-change",
-          "@rpath/libgeos.3.11.2.dylib", "#{lib}/cockroach/libgeos.dylib",
-          "#{lib}/cockroach/libgeos_c.dylib"
-      else
-        system "install_name_tool", "-change",
-          "@rpath/libgeos.3.13.1.dylib", "#{lib}/cockroach/libgeos.dylib",
-          "#{lib}/cockroach/libgeos_c.dylib"
-      end
+      system "install_name_tool", "-change",
+        libgeos_name, "#{lib}/cockroach/libgeos.dylib",
+        "#{lib}/cockroach/libgeos_c.dylib"
     end
 
     if OS.linux?
@@ -65,14 +85,14 @@ class CockroachAT243 < Formula
       mkdir "#{lib}/cockroach"
       lib.install "lib/libgeos.so" => "cockroach/libgeos.so"
       lib.install "lib/libgeos_c.so" => "cockroach/libgeos_c.so"
+
+      # Detect the libgeos version dynamically before modifying the library
+      libgeos_name = detect_libgeos_name("#{lib}/cockroach/libgeos_c.so")
+
       system "patchelf", "--set-rpath", "#{lib}/cockroach/", "#{lib}/cockroach/libgeos.so"
       system "patchelf", "--set-rpath", "#{lib}/cockroach/", "#{lib}/cockroach/libgeos_c.so"
       system "patchelf", "--set-soname", "libgeos.so", "#{lib}/cockroach/libgeos.so"
-      if version < Version.new("23.2.0")
-        system "patchelf", "--replace-needed", "libgeos.so.3.8.1", "libgeos.so", "#{lib}/cockroach/libgeos_c.so"
-      else
-        system "patchelf", "--replace-needed", "libgeos.so.3.11.2", "libgeos.so", "#{lib}/cockroach/libgeos_c.so"
-      end
+      system "patchelf", "--replace-needed", libgeos_name, "libgeos.so", "#{lib}/cockroach/libgeos_c.so"
     end
 
     system bin/"cockroach", "gen", "man", "--path=#{man1}"
