@@ -16,7 +16,6 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - macos-13 # amd64
           - macos-latest # arm64
           - ubuntu-latest # amd64
         product:
