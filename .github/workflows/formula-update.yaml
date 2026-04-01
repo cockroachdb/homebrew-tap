@@ -1,0 +1,121 @@
+# Updates a Homebrew formula to a new version via repository_dispatch.
+#
+# Trigger via the GitHub API:
+#   curl -X POST https://api.github.com/repos/cockroachdb/homebrew-tap/dispatches \
+#     -H "Authorization: token $GITHUB_TOKEN" \
+#     -H "Accept: application/vnd.github.v3+json" \
+#     -d '{"event_type":"formula-update","client_payload":{...}}'
+#
+# client_payload fields:
+#   product        (required) — formula name, e.g. "ccloud", "cockroach", "cockroach-sql"
+#   version        (required) — release version, e.g. "0.8.19"
+#   auto_merge     (optional) — set to "true" to approve and auto-merge the PR
+#   git_user_name  (optional) — git commit author name (default: cockroach-teamcity)
+#   git_user_email (optional) — git commit author email (default: cockroach-teamcity@users.noreply.github.com)
+#
+# Requires the CREATE_PR_PAT repository secret (a PAT with repo scope, used to
+# create the PR as a distinct identity so GITHUB_TOKEN can approve it).
+name: Update formula
+
+on:
+  repository_dispatch:
+    types: [formula-update]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  PRODUCT: ${{ github.event.client_payload.product }}
+  VERSION: ${{ github.event.client_payload.version }}
+  AUTO_MERGE: ${{ github.event.client_payload.auto_merge }}
+  GIT_USER_NAME: ${{ github.event.client_payload.git_user_name || 'cockroach-teamcity' }}
+  GIT_USER_EMAIL: ${{ github.event.client_payload.git_user_email || 'cockroach-teamcity@users.noreply.github.com' }}
+
+jobs:
+  update-formula:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate input
+        env:
+          CREATE_PR_PAT: ${{ secrets.CREATE_PR_PAT }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$CREATE_PR_PAT" ]]; then
+            echo "::error::CREATE_PR_PAT secret is not configured. Add a PAT with repo scope as a repository secret."
+            exit 1
+          fi
+          if [[ -z "$PRODUCT" ]]; then
+            echo "::error::product not provided in client_payload"
+            exit 1
+          fi
+          if [[ ! "$PRODUCT" =~ ^[a-z][a-z0-9@.-]*$ ]]; then
+            echo "::error::invalid product name: $PRODUCT"
+            exit 1
+          fi
+          if [[ -z "$VERSION" ]]; then
+            echo "::error::version not provided in client_payload"
+            exit 1
+          fi
+          if [[ ! "$VERSION" =~ ^[0-9A-Za-z._+-]+$ ]]; then
+            echo "::error::invalid version: $VERSION"
+            exit 1
+          fi
+          echo "Updating $PRODUCT formula to version $VERSION"
+
+      - uses: actions/checkout@v6
+
+      - name: Check for downgrade
+        run: |
+          set -euo pipefail
+          formula="Formula/${PRODUCT}.rb"
+          if [[ ! -f "$formula" ]]; then
+            echo "Error: formula file $formula does not exist"
+            exit 1
+          fi
+          current_version="$(grep 'version "' "$formula" | cut -d'"' -f2)"
+          latest="$(echo -e "$VERSION\n$current_version" | sort --version-sort -r | head -n1)"
+          if [[ "$latest" != "$VERSION" ]]; then
+            echo "Error: $VERSION is older than current version $current_version"
+            exit 1
+          fi
+          if [[ "$VERSION" == "$current_version" ]]; then
+            echo "Error: $VERSION is already the current version"
+            exit 1
+          fi
+
+      - name: Regenerate formula
+        run: make PRODUCT="$PRODUCT" VERSION="$VERSION"
+
+      - name: Create pull request
+        env:
+          GH_TOKEN: ${{ secrets.CREATE_PR_PAT }}
+        run: |
+          set -euo pipefail
+          branch="update-${PRODUCT}-for-${VERSION}-release"
+
+          git config user.name "$GIT_USER_NAME"
+          git config user.email "$GIT_USER_EMAIL"
+          git checkout -b "$branch"
+          git add "Formula/${PRODUCT}.rb"
+          git commit -m "Update brew formula for ${PRODUCT} ${VERSION} release"
+          git push origin "$branch"
+
+          pr_url=$(gh pr create \
+            --title "Update brew formula for ${PRODUCT} ${VERSION} release" \
+            --body "Automated PR to update the ${PRODUCT} Homebrew formula to version ${VERSION}." \
+            --base master \
+            --head "$branch")
+
+          echo "pr_url=$pr_url" >> "$GITHUB_OUTPUT"
+        id: create-pr
+
+      - name: Approve and auto-merge
+        if: env.AUTO_MERGE == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ steps.create-pr.outputs.pr_url }}
+        run: |
+          set -euo pipefail
+          gh pr review --approve "$PR_URL"
+          gh pr merge --auto --merge "$PR_URL"
