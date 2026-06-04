@@ -4,22 +4,22 @@
 class CockroachAT252 < Formula
   desc "Distributed SQL database"
   homepage "https://www.cockroachlabs.com"
-  version "25.2.18"
+  version "25.2.19"
   on_macos do
     on_intel do
-      url "https://binaries.cockroachdb.com/cockroach-v25.2.18.darwin-10.9-amd64.tgz"
-      sha256 "b1f8191c940550b9eb5b0b95386b0b5c706d2e7e19b52ece52390030a83cdaf5"
+      url "https://binaries.cockroachdb.com/cockroach-v25.2.19.darwin-10.9-amd64.tgz"
+      sha256 "e0a7baff465cea7fcdd98ebc325bd2abe7bbb7820ab356e73c4a95d757ba405e"
     end
     on_arm do
-      url "https://binaries.cockroachdb.com/cockroach-v25.2.18.darwin-11.0-arm64.tgz"
-      sha256 "4558b0fd5398ba658e3c2a56d07f3b4a345982670707e2d94f107143944c4629"
+      url "https://binaries.cockroachdb.com/cockroach-v25.2.19.darwin-11.0-arm64.tgz"
+      sha256 "5891919a25a89535a7aa8975cee1bd5ee76e48f40844ac380d5bfb7627b97f6b"
     end
   end
   on_linux do
     depends_on "patchelf" => :install
     on_intel do
-      url "https://binaries.cockroachdb.com/cockroach-v25.2.18.linux-amd64.tgz"
-      sha256 "c1c2887b8a2ced91f65b0885a27989cd38545c9dce7ca2d93b077e98df8cd8b0"
+      url "https://binaries.cockroachdb.com/cockroach-v25.2.19.linux-amd64.tgz"
+      sha256 "9a328f26fbb9f714ba7948e5edd1d5ed0f3bf9a99e5bd78c300af7d76a6cf6d3"
     end
   end
 
