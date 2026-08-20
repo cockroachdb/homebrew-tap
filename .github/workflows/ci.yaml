@@ -11,25 +11,36 @@ on:
   workflow_dispatch:
 
 jobs:
+  # Derive the list of products to test from the formulas present in Formula/,
+  # so adding or retiring a release requires no changes to this workflow.
+  discover:
+    runs-on: ubuntu-latest
+    outputs:
+      products: ${{ steps.list.outputs.products }}
+    steps:
+    - uses: actions/checkout@v6
+    - name: List formulas
+      id: list
+      run: |
+        set -euo pipefail
+        products=$(find Formula -maxdepth 1 -name '*.rb' -exec basename {} .rb \; \
+          | sort | jq -R . | jq -sc .)
+        echo "products=$products" >> "$GITHUB_OUTPUT"
+        echo "$products"
+
   tests:
+    needs: discover
     strategy:
       fail-fast: false
       matrix:
         os:
           - macos-latest # arm64
           - ubuntu-latest # amd64
-        product:
-          - cockroach
-          - cockroach@24.1
-          - cockroach@24.3
-          - cockroach@25.2
-          - cockroach@25.3
-          - cockroach-sql
-          - ccloud
+        product: ${{ fromJSON(needs.discover.outputs.products) }}
     name: ${{ matrix.product }} formula tests (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Install ${{ matrix.product }} formula
       run: |
         # Homebrew 4.6.4 introduced a breaking change that disabled the
